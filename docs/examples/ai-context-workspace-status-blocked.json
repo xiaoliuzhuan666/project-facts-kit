@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "schema": "docs/ai-context-workspace-status.schema.json",
+  "generatedBy": "ai-context-kit 0.3.58",
+  "generatedAt": "2026-06-15T00:00:00.000Z",
+  "workspace": ".",
+  "workspaceName": "example-blocked",
+  "status": "blocked",
+  "alertCodes": [
+    "AUDIT_STATE_INVALID",
+    "READINESS_BLOCKED"
+  ],
+  "readiness": {
+    "score": 28,
+    "rawScore": 28,
+    "maxScore": 100,
+    "level": "blocked",
+    "summary": "28/100: Do not claim the project is ready for agent handoff until blocked items are fixed.",
+    "factors": [
+      {
+        "id": "audit",
+        "label": "Drift audit",
+        "score": 0,
+        "max": 20,
+        "status": "blocked",
+        "evidence": [],
+        "missing": [
+          "invalid audit state"
+        ]
+      },
+      {
+        "id": "projectFacts",
+        "label": "Project facts",
+        "score": 0,
+        "max": 15,
+        "status": "missing",
+        "evidence": [],
+        "missing": [
+          "project-facts/project.md",
+          "project-facts/context-boundary.md"
+        ]
+      }
+    ]
+  },
+  "token": {
+    "status": "not_run",
+    "exists": true,
+    "valid": true,
+    "path": "docs/ai-context-token-status.json",
+    "generatedAt": "2026-06-15T00:00:00.000Z",
+    "staticContext": {
+      "status": "not_run",
+      "report": null,
+      "parentTokens": 0,
+      "routingTokens": 0,
+      "routingChangeFromParent": "unknown"
+    },
+    "hookObserve": {
+      "status": "not_enabled",
+      "events": 0
+    }
+  },
+  "audit": {
+    "status": "invalid",
+    "exists": true,
+    "valid": false,
+    "path": "docs/ai-context-audit-state.json",
+    "alertCodes": [],
+    "counts": {},
+    "error": "Unexpected token"
+  },
+  "quality": {
+    "status": "missing",
+    "exists": false,
+    "path": "docs/ai-context-kit-real-task-ab-audit.md",
+    "command": "ai-context-kit real-task-audit --workspace <path>"
+  },
+  "reports": {
+    "workspaceStatus": {
+      "exists": true,
+      "path": "docs/ai-context-workspace-status.json"
+    },
+    "tokenStatus": {
+      "exists": true,
+      "path": "docs/ai-context-token-status.json"
+    },
+    "auditState": {
+      "exists": true,
+      "path": "docs/ai-context-audit-state.json"
+    },
+    "realTaskAudit": {
+      "exists": false,
+      "path": null
+    }
+  },
+  "claims": {
+    "staticContextSavings": {
+      "status": "unknown",
+      "source": "docs/ai-context-token-status.json"
+    },
+    "realTaskSavings": {
+      "status": "unknown",
+      "source": "docs/ai-context-kit-real-task-ab-audit.md"
+    },
+    "qualityPreservedTokenSavings": {
+      "status": "blocked",
+      "reasons": [
+        "Static token report is not measured.",
+        "Real-task quality evidence is not complete.",
+        "Audit state is not clean."
+      ]
+    }
+  },
+  "actions": [
+    "Regenerate docs/ai-context-audit-state.json; the current JSON cannot be parsed.",
+    "Run ai-context-kit real-task-audit --workspace <path> before using real-task quality claims.",
+    "Fix blocked readiness factors before handing the project to another agent."
+  ]
+}

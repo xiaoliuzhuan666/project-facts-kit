@@ -1,0 +1,20 @@
+{
+  "name": "project-facts-kit",
+  "interface": {
+    "displayName": "Project Facts Kit"
+  },
+  "plugins": [
+    {
+      "name": "project-facts-kit",
+      "source": {
+        "source": "local",
+        "path": "./plugins/project-facts-kit"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -1,0 +1,418 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-facts-kit.local/schemas/ai-context-workspace-status.schema.json",
+  "title": "ai-context-kit workspace status",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "schema",
+    "generatedBy",
+    "generatedAt",
+    "workspace",
+    "workspaceName",
+    "status",
+    "alertCodes",
+    "readiness",
+    "token",
+    "audit",
+    "quality",
+    "reports",
+    "claims",
+    "actions"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "schema": {
+      "const": "docs/ai-context-workspace-status.schema.json"
+    },
+    "generatedBy": {
+      "type": "string",
+      "pattern": "^ai-context-kit "
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "workspace": {
+      "type": "string"
+    },
+    "workspaceName": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "partial",
+        "warning",
+        "blocked"
+      ]
+    },
+    "alertCodes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "readiness": {
+      "$ref": "#/$defs/readiness"
+    },
+    "token": {
+      "$ref": "#/$defs/tokenStatus"
+    },
+    "audit": {
+      "$ref": "#/$defs/auditStatus"
+    },
+    "quality": {
+      "$ref": "#/$defs/qualityStatus"
+    },
+    "reports": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "workspaceStatus",
+        "tokenStatus",
+        "auditState",
+        "realTaskAudit"
+      ],
+      "properties": {
+        "workspaceStatus": {
+          "$ref": "#/$defs/reportFile"
+        },
+        "tokenStatus": {
+          "$ref": "#/$defs/reportFile"
+        },
+        "auditState": {
+          "$ref": "#/$defs/reportFile"
+        },
+        "realTaskAudit": {
+          "$ref": "#/$defs/reportFile"
+        }
+      }
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "staticContextSavings",
+        "realTaskSavings",
+        "qualityPreservedTokenSavings"
+      ],
+      "properties": {
+        "staticContextSavings": {
+          "$ref": "#/$defs/claim"
+        },
+        "realTaskSavings": {
+          "$ref": "#/$defs/claim"
+        },
+        "qualityPreservedTokenSavings": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "status",
+            "reasons"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "available",
+                "unknown",
+                "blocked"
+              ]
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "readiness": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "score",
+        "level",
+        "factors"
+      ],
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "rawScore": {
+          "type": "number"
+        },
+        "maxScore": {
+          "type": "number"
+        },
+        "level": {
+          "enum": [
+            "ready",
+            "partial",
+            "warning",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string"
+        },
+        "factors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/readinessFactor"
+          }
+        }
+      }
+    },
+    "readinessFactor": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "label",
+        "score",
+        "max",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "score": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "partial",
+            "warning",
+            "missing",
+            "blocked"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "reportFile": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "exists",
+        "path"
+      ],
+      "properties": {
+        "exists": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "tokenStatus": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "exists",
+        "valid",
+        "path"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "measured",
+            "not_run",
+            "missing",
+            "invalid"
+          ]
+        },
+        "exists": {
+          "type": "boolean"
+        },
+        "valid": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "staticContext": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "report": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "parentTokens": {
+              "type": "number"
+            },
+            "routingTokens": {
+              "type": "number"
+            },
+            "routingChangeFromParent": {
+              "type": "string"
+            }
+          }
+        },
+        "hookObserve": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "events": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "auditStatus": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "exists",
+        "valid",
+        "path",
+        "alertCodes",
+        "counts"
+      ],
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "exists": {
+          "type": "boolean"
+        },
+        "valid": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "alertCodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "qualityStatus": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "exists",
+        "path"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ready",
+            "missing_evidence",
+            "warning",
+            "missing"
+          ]
+        },
+        "exists": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "countedRecords": {
+          "type": "number"
+        },
+        "candidateRecords": {
+          "type": "number"
+        },
+        "supportingFiles": {
+          "type": "number"
+        },
+        "missingCategories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "processWarnings": {
+          "type": "number"
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "source"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "available",
+            "unknown",
+            "blocked"
+          ]
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

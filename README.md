@@ -33,6 +33,8 @@
 | `docs/skill-feedback-automation-runbook.zh-CN.md` | 业务项目每日候选与 Skill 仓库评审自动化设置 |
 | `docs/team-training-iteration-runbook.zh-CN.md` | 团队培训、迭代计划和中途接手演练流程 |
 | `docs/monorepo-migration-runbook.zh-CN.md` | 多仓库迁移为 monorepo 的判断、执行、文档同步和验证流程 |
+| `docs/neudrive-integration.zh-CN.md` | 与 neuDrive 资料分发能力的边界和迁移说明 |
+| `docs/research/source-neudrive/` | 2026-05-25 从 neuDrive 复制来的调研与依据快照 |
 | `template/project-facts/` | 可放入目标项目的项目事实目录骨架，包含 Skill 反哺候选模板 |
 | `template/AGENTS.project-facts.fragment.md` | 可合并到目标项目 `AGENTS.md` 的 Agent 规则 |
 | `template/github/` | PR 与 CODEOWNERS 规则片段 |
@@ -193,7 +195,7 @@ project-facts-kit context real-task-audit --workspace /path/to/parent
 | 项目没有规格制度 | 安装 `project-facts/` 模板作为起始资料 |
 | 已使用 OpenSpec | 保留 `openspec/` 结构，将本项目的状态、证据和交接规则映射进去 |
 | 已使用 GitHub Spec Kit | 保留 `.specify` 和已有 `specs`，只增加来源、未知项和验收映射 |
-| 已使用团队资料库 | 用团队资料库分发模板、playbook 与 Skill；正式项目事实仍保存在代码仓库 |
+| 已使用 neuDrive | 用 Team Library 分发模板、playbook 与 Skill；正式项目事实仍保存在代码仓库 |
 
 ## 更新方式
 
@@ -203,7 +205,7 @@ project-facts-kit context real-task-audit --workspace /path/to/parent
 
 - 手工复制新版模板到项目并通过 PR 审阅变化；
 - 将本仓库作为 `tooling/project-facts-kit` 的 Git submodule 或 subtree 引用，再明确哪些文件只是模板；
-- 通过团队资料库分发 `Skill` 与 playbook，让不同 Agent 采用同一工作步骤。
+- 通过 neuDrive 分发 `Skill` 与 playbook，让不同 Agent 采用同一工作步骤。
 
 任何方式都不应绕过目标项目自己的审批与验证。
 
@@ -211,4 +213,4 @@ project-facts-kit context real-task-audit --workspace /path/to/parent
 
 ## 来源
 
-本项目来自多项目 AI 协作实践。公开仓库只保留通用制度、模板、Skill、CLI 和可复现的本地验证，不保存内部项目来源快照。
+本项目源自 neuDrive 内的多项目 AI 协作调研。迁移保留为复制快照，不删除原项目资料，见 [迁移与接入说明](docs/neudrive-integration.zh-CN.md)。

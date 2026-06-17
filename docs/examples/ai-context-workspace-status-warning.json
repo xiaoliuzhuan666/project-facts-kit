@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "schema": "docs/ai-context-workspace-status.schema.json",
+  "generatedBy": "ai-context-kit 0.3.58",
+  "generatedAt": "2026-06-15T00:00:00.000Z",
+  "workspace": ".",
+  "workspaceName": "example-warning",
+  "status": "warning",
+  "alertCodes": [
+    "CONTRACT_DRIFT_WARNING",
+    "READINESS_WARNING"
+  ],
+  "readiness": {
+    "score": 48,
+    "rawScore": 48,
+    "maxScore": 100,
+    "level": "warning",
+    "summary": "48/100: Use for guided investigation only; finish missing workflow or audit evidence before risky changes.",
+    "factors": [
+      {
+        "id": "audit",
+        "label": "Drift audit",
+        "score": 8,
+        "max": 20,
+        "status": "warning",
+        "evidence": [
+          "docs/ai-context-audit-state.json"
+        ],
+        "missing": [
+          "CONTRACT_DRIFT_WARNING"
+        ]
+      },
+      {
+        "id": "handover",
+        "label": "Iteration and handover",
+        "score": 2,
+        "max": 10,
+        "status": "warning",
+        "evidence": [],
+        "missing": [
+          "project-facts/handover/current.md"
+        ]
+      }
+    ]
+  },
+  "token": {
+    "status": "measured",
+    "exists": true,
+    "valid": true,
+    "path": "docs/ai-context-token-status.json",
+    "generatedAt": "2026-06-15T00:00:00.000Z",
+    "staticContext": {
+      "status": "measured",
+      "report": "docs/ai-context-token-savings-measurement.md",
+      "parentTokens": 100000,
+      "routingTokens": 20000,
+      "routingChangeFromParent": "节省 80.00%"
+    },
+    "hookObserve": {
+      "status": "not_enabled",
+      "events": 0
+    }
+  },
+  "audit": {
+    "status": "warning",
+    "exists": true,
+    "valid": true,
+    "path": "docs/ai-context-audit-state.json",
+    "alertCodes": [
+      "CONTRACT_DRIFT_WARNING"
+    ],
+    "counts": {
+      "contractDrifts": 1,
+      "conflictObservations": 0,
+      "unapprovedFieldMismatches": 1
+    }
+  },
+  "quality": {
+    "status": "missing_evidence",
+    "exists": true,
+    "path": "docs/ai-context-kit-real-task-ab-audit.md",
+    "countedRecords": 1,
+    "candidateRecords": 3,
+    "supportingFiles": 2,
+    "missingCategories": [
+      "miniapp-integration"
+    ],
+    "processWarnings": 0
+  },
+  "reports": {
+    "workspaceStatus": {
+      "exists": true,
+      "path": "docs/ai-context-workspace-status.json"
+    },
+    "tokenStatus": {
+      "exists": true,
+      "path": "docs/ai-context-token-status.json"
+    },
+    "auditState": {
+      "exists": true,
+      "path": "docs/ai-context-audit-state.json"
+    },
+    "realTaskAudit": {
+      "exists": true,
+      "path": "docs/ai-context-kit-real-task-ab-audit.md"
+    }
+  },
+  "claims": {
+    "staticContextSavings": {
+      "status": "available",
+      "source": "docs/ai-context-token-status.json"
+    },
+    "realTaskSavings": {
+      "status": "unknown",
+      "source": "docs/ai-context-kit-real-task-ab-audit.md"
+    },
+    "qualityPreservedTokenSavings": {
+      "status": "blocked",
+      "reasons": [
+        "Real-task quality evidence is not complete.",
+        "Audit state is not clean."
+      ]
+    }
+  },
+  "actions": [
+    "Read docs/ai-context-audit-state.json and record open drift or conflict items before changing related behavior.",
+    "Review readiness factors and finish missing workflow, handover, audit or verification evidence before high-risk changes."
+  ]
+}

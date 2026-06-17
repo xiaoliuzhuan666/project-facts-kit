@@ -1,0 +1,40 @@
+name: AI Context Check
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  context-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install ai-context-kit
+        run: npm install --global ai-context-kit@latest
+
+      - name: Run drift audit
+        run: ai-context-kit audit --workspace . --output docs/ai-context-audit-report.md --fail-on-warning
+
+      - name: Write workspace status
+        run: ai-context-kit status --workspace . --json --output docs/ai-context-workspace-status.json --fail-on-warning
+
+      - name: Upload context reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-context-reports
+          path: |
+            docs/ai-context-audit-report.md
+            docs/ai-context-audit-state.json
+            docs/ai-context-workspace-status.json
+            docs/ai-context-workspace-status.schema.json
+          if-no-files-found: ignore

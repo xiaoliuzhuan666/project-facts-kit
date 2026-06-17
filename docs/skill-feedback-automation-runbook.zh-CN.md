@@ -9,7 +9,6 @@
 - `Skill` 提升接手效率和执行下限。
 - `project-facts/` 保证不偏离项目真实情况。
 - PR 审阅保证经验不会未经确认变成团队规则。
-- 每日候选只保存可复用经验、证据路径和验证状态；业务数据、用户数据、请求/响应正文、密钥、cookie、生产配置值和原始日志不能进入候选文件。
 
 这个流程的目标是让真实项目经验持续进入共享 Skill，但不让 AI 自己改制度。业务项目每天产出可评审候选；Skill 仓库负责评审候选；只有通过审阅和检查的变化才进入共享 `skills/`、模板、脚本或 CLI。
 
@@ -37,29 +36,6 @@
 4. 能明确归属时，写入对应子仓库的 `project-facts/skill-feedback/`。
 5. 多个子仓库各自有证据时，分别写候选；归属冲突或证据不足时，只在运行报告里列为待确认，不猜测写入。
 
-## 隐私与脱敏
-
-每日候选任务默认按公开仓库标准整理内容。候选文件只记录：
-
-- 仓库相对路径、文件名、函数名、命令名、检查状态和简短结论。
-- 已脱敏后的错误类型、工具行为和验证结果。
-- 需要 owner 查看原文时，记录本地证据路径和摘要，不复制原文。
-
-候选文件和每日摘要不得记录：
-
-- 真实客户、用户、员工、租户、账号、手机号、邮箱、身份证件、订单号、合同号、交易流水、地址或定位信息。
-- 请求正文、响应正文、数据库行、生产日志原文、会话 trace 原文、截图中的个人或客户信息。
-- API key、token、cookie、Authorization header、数据库密码、证书私钥、生产环境变量值。
-- 可识别内部业务项目的专属规则、价格、库存、风控、权限或运营策略。
-
-需要引用日志、接口响应、Codex event、stderr 或任务 trace 时，先运行：
-
-```bash
-ai-context-kit redact --input <raw-file> --output <redacted-file>
-```
-
-脱敏后仍要人工看一眼；无法确认安全的内容只写“本地证据路径 + 摘要 + 待 owner 查看”，不复制到候选文件。
-
 标准提示词可以由 CLI 生成：
 
 ```bash
@@ -75,12 +51,6 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 能明确归属时，把候选写到对应子仓库的 project-facts/skill-feedback/；多个子仓库各自有证据时分别写；归属冲突或证据不足时，只在最终报告列待确认项，不猜测写入。
 
 如项目使用 ai-context-kit，先读取 `ai-context-kit doctor --workspace <path>` 的 capability status 和 `ai-context-kit token-status --workspace <path>`，只把缺失、过期或误导状态整理成候选证据，不自动执行初始化或修改共享 Skill。
-
-隐私规则：
-候选文件和每日摘要只写仓库相对路径、符号名、命令名、检查状态和已脱敏的短结论。
-不要写入业务数据、用户数据、客户数据、请求/响应正文、数据库行、生产日志原文、会话 trace 原文、token、cookie、Authorization header、API key、数据库密码、证书私钥或生产环境变量值。
-需要引用日志、API 响应、stderr、Codex event 或任务 trace 时，先运行 ai-context-kit redact；脱敏后仍无法确认安全的内容，只记录本地证据路径和摘要，不复制原文。
-项目专属业务规则、价格、库存、风控、权限、运营策略只留在业务项目事实中，不进入共享 Skill 候选。
 
 只整理可以反哺到共享 Skill 的候选项，不修改正式 Skill、模板、脚本、CLI 或项目事实批准状态。
 
@@ -99,7 +69,6 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 | Evidence paths | 相关文件、命令、报告或日志路径 |
 | Verification result | `Pass`、`Fail` 或 `Not run`，不能省略 |
 | Applicability | 是否跨项目适用，是否只是项目专属规则 |
-| Privacy | 是否已确认不含业务数据、用户数据、密钥和原始日志 |
 | Review | 初始保持 `Pending` |
 
 ## Skill 仓库评审任务
@@ -187,7 +156,6 @@ Agent 有 Codex app automation 能力时，按当前打开目录创建或更新 
 | 当天没有任务证据 | 不生成候选，写运行记录即可 |
 | 只有聊天或 AI 总结 | 标为 `needs-evidence` |
 | 候选明显是项目专属规则 | 留在业务项目 `project-facts/`，本仓库标为 `rejected` 或不接收 |
-| 证据含业务数据、用户数据或密钥 | 运行 `ai-context-kit redact` 后只保留脱敏摘要；无法确认安全时不写候选原文 |
 | 验证未执行 | 写 `Not run`，不能写 Pass |
 | owner 未审阅 | 不得标为 `accepted` |
 | 检查失败 | 不合并，记录失败命令和输出摘要 |

@@ -161,4 +161,4 @@ ai-context-kit real-task-audit --workspace <parent-or-repo>
 
 报告会写入 `docs/ai-context-kit-real-task-ab-audit.md`，用于查看三类验证是否齐全，并提示后端单接口记录里是否出现本地索引读取、宽 DTO 搜索或过深后续链路。审计只检查记录声明、分类和流程风险文本，不替代测试、构建或接口联调结果。
 
-本仓库当前 `docs/ai-context-kit-real-task-ab-audit.md` 仍显示 counted records 为 0，三类均 missing；公开仓库内的样例 Markdown 只能作为局部证据、流程候选或 exec-events 支撑材料。团队私有工作区可按模板补齐后端 bug、小程序联调、跨端字段问题三类记录；这些记录未作为可计入记录进入本仓库前，本仓库不能声明三类验证已齐。后续默认流程仍必须优先执行上面的后端单接口规则。
+本仓库当前 `docs/ai-context-kit-real-task-ab-audit.md` 仍显示 counted records 为 0，三类均 missing；仓库内现有 KT、cc-connect Markdown 只能作为局部证据、流程候选或 exec-events 支撑材料。2026-06-08 外部 KT 工作区曾补齐后端 bug、小程序联调、跨端字段问题三类记录，并显示后端单接口样本仍有 300 万级 total tokens，主要问题是读取了本地索引、宽 DTO 搜索和过深异步状态链路。外部记录未作为可计入记录进入本仓库前，本仓库不能声明三类验证已齐；后续默认流程仍必须优先执行上面的后端单接口规则。

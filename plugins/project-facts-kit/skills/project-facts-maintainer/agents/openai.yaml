@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Facts Maintainer"
+  short_description: "Manage project facts, runtime records, and evidence"
+  default_prompt: "Use $project-facts-maintainer to assess this project and maintain its approved facts, runtime records, handovers, and evidence."

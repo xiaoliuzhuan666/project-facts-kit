@@ -23,17 +23,6 @@
 | Verification result | `<command or evidence path>` | `Pass / Fail / Not run` | `<reason if not run>` |
 | User or reviewer decision | `<path, PR or approval>` | `APPROVED / UNKNOWN` | `<short note>` |
 
-## Privacy And Redaction
-
-| Check | Status | Notes |
-| --- | --- | --- |
-| Contains no business data, user data, customer data or production data | `yes / no / unknown` | `<short note>` |
-| Contains no request or response bodies, raw logs, database rows or trace dumps | `yes / no / unknown` | `<short note>` |
-| Contains no API keys, tokens, cookies, passwords, private keys or production env values | `yes / no / unknown` | `<short note>` |
-| Raw evidence was redacted before being summarized | `yes / no / not-needed` | `<redacted path or reason>` |
-
-Only record repository-relative paths, symbols, commands, validation status and a short sanitized summary. If raw logs, API responses, stderr, Codex events or task traces are needed, run `ai-context-kit redact --input <raw-file> --output <redacted-file>` first and review the result. When safety is unclear, keep the raw evidence local and cite its path plus summary instead of copying it here.
-
 ## Observed Skill Behavior
 
 - Useful behavior: `<what helped, or Not observed>`

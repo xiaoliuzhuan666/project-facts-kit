@@ -1,0 +1,80 @@
+diff --git a/core/engine.go b/core/engine.go
+index a3c5b8b..75c9e44 100644
+--- a/core/engine.go
++++ b/core/engine.go
+@@ -5455,18 +5455,29 @@ func compactReplyFooterPath(path string) string {
+   if path == "" {
+     return ""
+   }
+-  path = normalizeWorkspacePath(path)
+   if home, err := os.UserHomeDir(); err == nil {
+-    home = normalizeWorkspacePath(home)
+-    if path == home {
++    cleanPath := filepath.Clean(path)
++    cleanHome := filepath.Clean(home)
++    if cleanPath == cleanHome {
++      return "~"
++    }
++    cleanHomePrefix := cleanHome + string(os.PathSeparator)
++    if strings.HasPrefix(cleanPath, cleanHomePrefix) {
++      return "~" + filepath.ToSlash(strings.TrimPrefix(cleanPath, cleanHome))
++    }
++
++    normalizedPath := normalizeWorkspacePath(cleanPath)
++    normalizedHome := normalizeWorkspacePath(cleanHome)
++    if normalizedPath == normalizedHome {
+       return "~"
+     }
+-    prefix := home + string(os.PathSeparator)
+-    if strings.HasPrefix(path, prefix) {
+-      return "~" + filepath.ToSlash(strings.TrimPrefix(path, home))
++    normalizedHomePrefix := normalizedHome + string(os.PathSeparator)
++    if strings.HasPrefix(normalizedPath, normalizedHomePrefix) {
++      return "~" + filepath.ToSlash(strings.TrimPrefix(normalizedPath, normalizedHome))
+     }
+   }
+
++  path = normalizeWorkspacePath(path)
+   slash := filepath.ToSlash(path)
+   if filepath.IsAbs(path) {
+     trimmed := strings.Trim(slash, "/")
+@@ -5908,6 +5919,7 @@ func (e *Engine) cmdDiff(p Platform, msg *Message, raw string) {
+     }
+
+     // Try diff2html + FileSender
++    diff2HTMLMissing := false
+     if fileSender, ok := p.(FileSender); ok {
+       title := fmt.Sprintf("%s vs %s", currentBranch, target)
+       htmlData, err := e.diff2html(ctx, diffOutput, workDir, title)
+@@ -5921,7 +5933,7 @@ func (e *Engine) cmdDiff(p Platform, msg *Message, raw string) {
+         }
+       }
+       if errors.Is(err, exec.ErrNotFound) {
+-        e.reply(p, msg.ReplyCtx, e.i18n.T(MsgDiffNoDiff2HTML))
++        diff2HTMLMissing = true
+       }
+     }
+
+@@ -5930,7 +5942,12 @@ func (e *Engine) cmdDiff(p Platform, msg *Message, raw string) {
+     if runes := []rune(result); len(runes) > 4000 {
+       result = string(runes[:3997]) + "..."
+     }
+-    e.reply(p, msg.ReplyCtx, "```diff\n"+result+"\n```")
++    if diff2HTMLMissing {
++      result = e.i18n.T(MsgDiffNoDiff2HTML) + "\n\n```diff\n" + result + "\n```"
++    } else {
++      result = "```diff\n" + result + "\n```"
++    }
++    e.reply(p, msg.ReplyCtx, result)
+   }()
+ }
+
+@@ -13316,7 +13333,7 @@ func resolveLocalDirPath(target, baseDir string) (string, error) {
+       return "", fmt.Errorf("path escapes workspace base directory")
+     }
+   }
+-  return resolved, nil
++  return cleaned, nil
+ }
+
+ // looksLikeLocalDir returns true if the string looks like a local directory

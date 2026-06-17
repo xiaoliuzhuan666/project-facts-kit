@@ -32,16 +32,17 @@ features by default. Store filled records under `docs/real-task-ab/`.
 
 ## Usage
 
-For teammates using the shared kit, prepare the machine once:
+For teammates using the shared kit from the public GitHub repository, prepare the
+machine once:
 
 ```bash
 bash -lc 'set -e; KIT="$HOME/.cache/project-facts-kit"; REPO="https://github.com/xiaoliuzhuan666/project-facts-kit.git"; BRANCH="${PROJECT_FACTS_KIT_BRANCH:-main}"; mkdir -p "$(dirname "$KIT")"; if [ -e "$KIT" ] && [ ! -d "$KIT/.git" ]; then BK="$KIT.non-git-$(date +%Y%m%d%H%M%S)"; mv "$KIT" "$BK"; echo "Existing non-git kit moved to $BK"; fi; if [ -d "$KIT/.git" ]; then if [ -n "$(git -C "$KIT" status --porcelain)" ]; then BK="$KIT.dirty-$(date +%Y%m%d%H%M%S)"; mv "$KIT" "$BK"; echo "Existing dirty kit moved to $BK"; git clone --branch "$BRANCH" "$REPO" "$KIT"; else git -C "$KIT" fetch origin "$BRANCH:refs/remotes/origin/$BRANCH"; git -C "$KIT" switch "$BRANCH" 2>/dev/null || git -C "$KIT" switch -c "$BRANCH" "origin/$BRANCH"; git -C "$KIT" pull --ff-only origin "$BRANCH" || { BK="$KIT.diverged-$(date +%Y%m%d%H%M%S)"; mv "$KIT" "$BK"; echo "Existing non-ff kit moved to $BK"; git clone --branch "$BRANCH" "$REPO" "$KIT"; }; fi; else git clone --branch "$BRANCH" "$REPO" "$KIT"; fi; "$KIT/scripts/setup-local-kit.sh"'
 ```
 
 The setup script links `ai-context-kit` and `project-facts-kit` with `npm link`
-and installs the shared Codex skills into the user skill directory. If cloning
-fails, check network access, account permissions, or Git credentials before
-using the project prompts.
+and installs the shared Codex skills into the user skill directory. If the clone
+fails for the GitHub repository, fix repository access before using the
+project prompts.
 
 For the full update command list, see
 `docs/project-facts-kit-update-commands.zh-CN.md` in the repository root.
@@ -63,9 +64,9 @@ ai-context-kit token-status --workspace /path/to/workspace --json --output docs/
 ai-context-kit editor-tasks --workspace /path/to/workspace
 ai-context-kit automation-prompt --workspace /path/to/workspace --type skill-feedback-candidate
 ai-context-kit contracts --workspace /path/to/workspace --query "/api/orders"
-ai-context-kit contracts --workspace /path/to/workspace --query "createOrder" --frontend-repo frontend-app
-ai-context-kit contracts --workspace /path/to/workspace --query "createOrder" --backend-repo order-api
-ai-context-kit contracts --workspace /path/to/workspace --query "createOrder" --related payment
+ai-context-kit contracts --workspace /path/to/workspace --query "saveOrderInfo" --frontend-repo frontend-app
+ai-context-kit contracts --workspace /path/to/workspace --query "saveOrderInfo" --backend-repo order-api
+ai-context-kit contracts --workspace /path/to/workspace --query "saveOrderInfo" --related payment
 ai-context-kit real-task-audit --workspace /path/to/workspace
 ai-context-kit graph --workspace /path/to/workspace --output docs/ai-context-graph.json
 ai-context-kit redact --input /tmp/codex-events.jsonl --output /tmp/codex-events.redacted.jsonl
@@ -297,10 +298,10 @@ field-check hints for missing required DTO fields and payload-only fields.
 Use `contracts` to avoid reading a full contract map:
 
 ```bash
-ai-context-kit contracts --workspace /path/to/parent --query "createOrder|/api/order/createOrder"
-ai-context-kit contracts --workspace /path/to/parent --query "createOrder" --frontend-repo app
-ai-context-kit contracts --workspace /path/to/parent --query "createOrder" --backend-repo backend
-ai-context-kit contracts --workspace /path/to/parent --query "createOrder" --related payment
+ai-context-kit contracts --workspace /path/to/parent --query "saveOrderInfo|/api/order/saveOrderInfo"
+ai-context-kit contracts --workspace /path/to/parent --query "saveOrderInfo" --frontend-repo app
+ai-context-kit contracts --workspace /path/to/parent --query "saveOrderInfo" --backend-repo backend
+ai-context-kit contracts --workspace /path/to/parent --query "saveOrderInfo" --related payment
 ```
 
 The command filters workspace and backend contract maps by endpoint, symbol,

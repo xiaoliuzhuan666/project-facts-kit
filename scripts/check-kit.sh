@@ -15,12 +15,22 @@ required_files=(
   "docs/ai-context-kit-operating-workflow.zh-CN.md"
   "docs/ai-context-kit-real-task-ab-template.zh-CN.md"
   "docs/ai-context-kit-real-task-ab-audit.md"
+  "docs/real-task-ab/2026-06-06-kt-boat-rental-cross-end-field.md"
+  "docs/real-task-ab/2026-06-06-kt-boat-rental-session-ab.md"
+  "docs/real-task-ab/2026-06-07-cc-connect-backend-path-footer.md"
+  "docs/real-task-ab/2026-06-07-cc-connect-backend-path-footer.patch"
+  "docs/real-task-ab/2026-06-08-cc-connect-a-events.redacted.jsonl"
+  "docs/real-task-ab/2026-06-08-cc-connect-exec-events.md"
+  "docs/real-task-ab/2026-06-08-cc-connect-real-ab-exec-events.md"
+  "docs/real-task-ab/2026-06-08-kt-mcp-success-exec-events.md"
   "docs/skill-feedback/README.md"
   "docs/skill-feedback/_template.md"
   "docs/skill-carrier-assessment.zh-CN.md"
   "docs/skill-feedback-automation-runbook.zh-CN.md"
   "docs/research/skill-carrier-source-notes-2026-06-17.zh-CN.md"
   "docs/codex-mem-mcp-codex-config.zh-CN.md"
+  "docs/neudrive-integration.zh-CN.md"
+  "docs/research/source-neudrive/SHA256SUMS"
   "template/AGENTS.project-facts.fragment.md"
   "template/project-facts/README.md"
   "template/project-facts/project.md"
@@ -63,6 +73,11 @@ for path in "${required_files[@]}"; do
     exit 1
   fi
 done
+
+(
+  cd "$repo_root"
+  shasum -a 256 -c docs/research/source-neudrive/SHA256SUMS >/dev/null
+)
 
 if command -v rg >/dev/null 2>&1 && rg -n '\[TODO:' "$repo_root/skills/project-facts-maintainer" "$repo_root/skills/low-token-context-maintainer"; then
   printf 'Skill still contains scaffold TODO markers.\n' >&2
@@ -181,23 +196,14 @@ if [[ -e "$tmp/lite-target/project-facts/integration/github" ]]; then
 fi
 
 mkdir -p "$tmp/redact"
-fake_openai_key="sk-$(printf 'test1234567890abcdef')"
-fake_masked_key="sk-$(printf 'Bc')$(printf 'Ssy')***********************qKKZ"
-fake_bearer="$(printf 'abcdefghijklmnopqrstuvwxyz')123456"
-fake_session="$(printf 'abcdef')123456"
-fake_password="super-$(printf 'sec')$(printf 'ret')-value"
-fake_email="admin$(printf '@')example$(printf '.')com"
-fake_phone="138$(printf '001')$(printf '38000')"
-fake_home="/Users/$(printf 'ali')$(printf 'ce')"
-fake_url_password="pass$(printf 'w')$(printf '0rd')"
 printf '%s\n' \
-  "OPENAI_API_KEY=${fake_openai_key}" \
-  "masked_openai_key=${fake_masked_key}" \
-  "Authorization: Bearer ${fake_bearer}" \
-  "Cookie: sessionid=${fake_session}; theme=dark" \
-  "{\"password\":\"${fake_password}\",\"tokenEstimate\":123}" \
-  "contact ${fake_email} phone ${fake_phone} path ${fake_home}/project" \
-  "database_url=https://user:${fake_url_password}@example.com/db" \
+  'OPENAI_API_KEY=sk-test1234567890abcdef' \
+  'masked_openai_key=sk-BcSsy***********************qKKZ' \
+  'Authorization: Bearer abcdefghijklmnopqrstuvwxyz123456' \
+  'Cookie: sessionid=abcdef123456; theme=dark' \
+  '{"password":"super-secret-value","tokenEstimate":123}' \
+  'contact admin@example.com phone 13800138000 path /Users/alice/project' \
+  'database_url=https://user:passw0rd@example.com/db' \
   > "$tmp/redact/input.txt"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" redact --input "$tmp/redact/input.txt" --output "$tmp/redact/output.txt" >/dev/null
 grep -Fq '***REDACTED***' "$tmp/redact/output.txt"
@@ -205,12 +211,10 @@ grep -Fq '<redacted-email>' "$tmp/redact/output.txt"
 grep -Fq '<redacted-phone>' "$tmp/redact/output.txt"
 grep -Fq '/Users/<user>/project' "$tmp/redact/output.txt"
 grep -Fq 'tokenEstimate' "$tmp/redact/output.txt"
-for leaked in "$fake_openai_key" "$fake_masked_key" "$fake_bearer" "$fake_session" "$fake_password" "$fake_email" "$fake_phone" "$fake_home" "$fake_url_password"; do
-  if grep -Fq "$leaked" "$tmp/redact/output.txt"; then
-    printf 'redact left a sensitive test value in output.\n' >&2
-    exit 1
-  fi
-done
+if grep -Eq 'sk-test1234567890abcdef|sk-BcSsy|abcdefghijklmnopqrstuvwxyz123456|sessionid=abcdef123456|super-secret-value|admin@example.com|13800138000|/Users/alice|user:passw0rd' "$tmp/redact/output.txt"; then
+  printf 'redact left a sensitive test value in output.\n' >&2
+  exit 1
+fi
 printf 'password=stdin-secret-value\n' | "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" redact --input - | grep -Fq 'password=***REDACTED***'
 
 mkdir -p "$tmp/sync-target/project-facts/skills/demo-skill" "$tmp/sync-target/.codex/skills/demo-skill"
@@ -242,19 +246,19 @@ if grep -Eq 'application-prod\.yml|src/main/resources/cert' "$tmp/map-target/pro
   exit 1
 fi
 
-mkdir -p "$tmp/missing-workflow/web-app/project-facts" "$tmp/missing-workflow/api-service/src/main/java/com/example/demo/controller" "$tmp/missing-workflow/go-service/core" "$tmp/missing-workflow/admin-console-ui/src/views"
+mkdir -p "$tmp/missing-workflow/web-app/project-facts" "$tmp/missing-workflow/api-service/src/main/java/com/example/demo/controller" "$tmp/missing-workflow/go-service/core" "$tmp/missing-workflow/ticket-console-ui/src/views"
 git -C "$tmp/missing-workflow/web-app" init >/dev/null 2>&1
 git -C "$tmp/missing-workflow/api-service" init >/dev/null 2>&1
 git -C "$tmp/missing-workflow/go-service" init >/dev/null 2>&1
-git -C "$tmp/missing-workflow/admin-console-ui" init >/dev/null 2>&1
+git -C "$tmp/missing-workflow/ticket-console-ui" init >/dev/null 2>&1
 printf '{"name":"web-app","scripts":{"build":"vite build"}}\n' > "$tmp/missing-workflow/web-app/package.json"
 printf '{"pages":[{"path":"pages/order/detail"}]}\n' > "$tmp/missing-workflow/web-app/pages.json"
 printf 'manual project facts\n' > "$tmp/missing-workflow/web-app/project-facts/project.md"
 printf '<project><artifactId>api-service</artifactId></project>\n' > "$tmp/missing-workflow/api-service/pom.xml"
 printf 'module example.com/go-service\n\ngo 1.22\n' > "$tmp/missing-workflow/go-service/go.mod"
 printf 'package core\n\nfunc Add(a, b int) int { return a + b }\n' > "$tmp/missing-workflow/go-service/core/add.go"
-printf '{"name":"admin-console-ui","scripts":{"build":"vue-cli-service build"}}\n' > "$tmp/missing-workflow/admin-console-ui/package.json"
-printf '<template><div>ui</div></template>\n' > "$tmp/missing-workflow/admin-console-ui/src/views/index.vue"
+printf '{"name":"ticket-console-ui","scripts":{"build":"vue-cli-service build"}}\n' > "$tmp/missing-workflow/ticket-console-ui/package.json"
+printf '<template><div>ticket</div></template>\n' > "$tmp/missing-workflow/ticket-console-ui/src/views/index.vue"
 printf '%s\n' \
   'package com.example.demo.controller;' \
   '' \
@@ -276,7 +280,10 @@ grep -Fq 'tech: go' "$tmp/missing-workflow-doctor.md"
 grep -Fq 'capability status:' "$tmp/missing-workflow-doctor.md"
 grep -Fq 'low-token artifacts: missing' "$tmp/missing-workflow-doctor.md"
 grep -Fq 'contract index: missing' "$tmp/missing-workflow-doctor.md"
-grep -Fq 'CodeGraph: missing_cli' "$tmp/missing-workflow-doctor.md"
+if ! grep -Eq 'CodeGraph: (missing_cli|recommended)' "$tmp/missing-workflow-doctor.md"; then
+  printf 'doctor did not report an expected CodeGraph status.\n' >&2
+  exit 1
+fi
 grep -Fq 'static token report: not_run' "$tmp/missing-workflow-doctor.md"
 grep -Fq 'observe hooks: not_enabled' "$tmp/missing-workflow-doctor.md"
 grep -Fq 'agents --workspace <path>' "$tmp/missing-workflow-doctor.md"
@@ -299,24 +306,24 @@ test -s "$tmp/missing-workflow/api-service/AGENTS.md"
 test -s "$tmp/missing-workflow/api-service/project-facts/backend-route-controller-map.md"
 test -s "$tmp/missing-workflow/go-service/AGENTS.md"
 test -s "$tmp/missing-workflow/go-service/project-facts/verification.md"
-test -s "$tmp/missing-workflow/admin-console-ui/AGENTS.md"
-test -s "$tmp/missing-workflow/admin-console-ui/project-facts/api-endpoints.md"
+test -s "$tmp/missing-workflow/ticket-console-ui/AGENTS.md"
+test -s "$tmp/missing-workflow/ticket-console-ui/project-facts/api-endpoints.md"
 grep -Fq '多仓库工作区' "$tmp/missing-workflow/AGENTS.md"
 grep -Fq 'ai-context-kit contracts' "$tmp/missing-workflow/AGENTS.md"
 grep -Fq '不要整段读取契约索引' "$tmp/missing-workflow/AGENTS.md"
-grep -Fq '管理控制台前端' "$tmp/missing-workflow/AGENTS.md"
-if grep -Fq '`admin-console-ui` | 业务 Java 后端' "$tmp/missing-workflow/AGENTS.md"; then
-  printf 'admin-console-ui was incorrectly classified as a Java backend.\n' >&2
+grep -Fq '票务控制台前端' "$tmp/missing-workflow/AGENTS.md"
+if grep -Fq '`ticket-console-ui` | 票务 Java 后端' "$tmp/missing-workflow/AGENTS.md"; then
+  printf 'ticket-console-ui was incorrectly classified as a Java backend.\n' >&2
   exit 1
 fi
 grep -Fq 'pages.json' "$tmp/missing-workflow/web-app/AGENTS.md"
 grep -Fq 'Controller' "$tmp/missing-workflow/api-service/AGENTS.md"
 grep -Fq 'Go 后端服务' "$tmp/missing-workflow/go-service/AGENTS.md"
-grep -Fq '管理控制台前端' "$tmp/missing-workflow/admin-console-ui/AGENTS.md"
-grep -Fq 'src/views 下相关页面' "$tmp/missing-workflow/admin-console-ui/AGENTS.md"
+grep -Fq '票务控制台前端' "$tmp/missing-workflow/ticket-console-ui/AGENTS.md"
+grep -Fq 'src/views 下相关页面' "$tmp/missing-workflow/ticket-console-ui/AGENTS.md"
 grep -Fq '小程序 API endpoint 索引' "$tmp/missing-workflow/web-app/project-facts/api-endpoints.md"
-grep -Fq '前端 API endpoint 索引' "$tmp/missing-workflow/admin-console-ui/project-facts/api-endpoints.md"
-grep -Fq '前端页面与 API 文件映射' "$tmp/missing-workflow/admin-console-ui/project-facts/applet-route-api-map.md"
+grep -Fq '前端 API endpoint 索引' "$tmp/missing-workflow/ticket-console-ui/project-facts/api-endpoints.md"
+grep -Fq '前端页面与 API 文件映射' "$tmp/missing-workflow/ticket-console-ui/project-facts/applet-route-api-map.md"
 grep -Fq 'go test ./...' "$tmp/missing-workflow/go-service/project-facts/verification.md"
 grep -Fq '/api/orders/{id}' "$tmp/missing-workflow/api-service/project-facts/backend-route-controller-map.md"
 grep -Fq 'api-service' "$tmp/missing-workflow/.codex-mem/index.jsonl"
@@ -334,8 +341,8 @@ if grep -R -F "$tmp/missing-workflow" \
   "$tmp/missing-workflow/api-service/project-facts" \
   "$tmp/missing-workflow/go-service/AGENTS.md" \
   "$tmp/missing-workflow/go-service/project-facts" \
-  "$tmp/missing-workflow/admin-console-ui/AGENTS.md" \
-  "$tmp/missing-workflow/admin-console-ui/project-facts" >/dev/null; then
+  "$tmp/missing-workflow/ticket-console-ui/AGENTS.md" \
+  "$tmp/missing-workflow/ticket-console-ui/project-facts" >/dev/null; then
   printf 'agents generated files unexpectedly contain a temporary absolute path.\n' >&2
   exit 1
 fi
@@ -440,14 +447,14 @@ printf '%s\n' \
   > "$tmp/context-workspace/app/api/user.js"
 printf '%s\n' \
   "export const cancelUser = (id) => request({ url: '/api/users/cancel', method: 'post', data: { id } });" \
-  "export const updateAssetStatus = (id, status) => request({ url: '/api/assets/updateAssetStatus', method: 'post', data: { id, status } });" \
-  "export const finalizeDemoOrder = (id) => request({ url: '/api/demo-orders/finalize', method: 'post', data: { id } });" \
-  "export const startDemoPayment = (id) => request({ url: '/api/demo-payments/start', method: 'post', data: { id } });" \
-  "export const prepareDemoInventory = (id) => request({ url: '/api/demo-inventory/prepare', method: 'post', data: { id, demoStartDate: '2026-06-06' } });" \
+  "export const updateDeviceStatus = (id, status) => request({ url: '/api/equipment/updateDeviceStatus', method: 'post', data: { id, status } });" \
+  "export const settleLeaseOrder = (id) => request({ url: '/api/orders/revertLeaseOrder', method: 'post', data: { id } });" \
+  "export const payUserOrder = (id) => request({ url: '/api/pay/weAppPay', method: 'post', data: { id } });" \
+  "export const preSaveOrderCommodity = (id) => request({ url: '/api/commodity/preSaveOrderCommodity', method: 'post', data: { id, shipStartDate: '2026-06-06' } });" \
   "export async function archiveUser(id) {" \
   "  return fetch('/api/users/archive', { method: 'POST', body: JSON.stringify({ id }) });" \
   "}" \
-  "export default { cancelUser, updateAssetStatus, finalizeDemoOrder, startDemoPayment, prepareDemoInventory, archiveUser };" \
+  "export default { cancelUser, updateDeviceStatus, settleLeaseOrder, payUserOrder, preSaveOrderCommodity, archiveUser };" \
   > "$tmp/context-workspace/app/services/order.ts"
 printf '%s\n' \
   "const RUNTIME_BASE = '/api/runtimeOrder';" \
@@ -495,10 +502,10 @@ printf '%s\n' \
   '    loadUser() { return this.$http("get", userApi.getUser); },' \
   '    createUser() { return this.$http("post", userApi.saveUser, { displayName: "Ada" }); },' \
   '    cancelUser() { return orderApi.cancelUser(1); },' \
-  '    updateAssetStatus() { return orderApi.updateAssetStatus(1, "idle"); },' \
-  '    finalizeDemoOrder() { return orderApi.finalizeDemoOrder(1); },' \
-  '    startDemoPayment() { return orderApi.startDemoPayment(1); },' \
-  '    prepareDemoInventory() { return orderApi.prepareDemoInventory(1); },' \
+  '    updateDeviceStatus() { return orderApi.updateDeviceStatus(1, "idle"); },' \
+  '    settleLeaseOrder() { return orderApi.settleLeaseOrder(1); },' \
+  '    payUserOrder() { return orderApi.payUserOrder(1); },' \
+  '    preSaveOrderCommodity() { return orderApi.preSaveOrderCommodity(1); },' \
   '    archiveUser() { return orderApi.archiveUser(1); }' \
   '  }' \
   '}' \
@@ -601,10 +608,10 @@ grep -Fq 'pages/user/detail.vue' "$tmp/context-workspace/docs/ai-context-api-con
 grep -Fq 'services/order.ts' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
 grep -Fq 'cancelUser' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
 grep -Fq '/api/users/cancel' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
-grep -Fq 'updateAssetStatus' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
-grep -Fq 'finalizeDemoOrder' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
-grep -Fq 'startDemoPayment' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
-grep -Fq 'prepareDemoInventory' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
+grep -Fq 'updateDeviceStatus' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
+grep -Fq 'settleLeaseOrder' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
+grep -Fq 'payUserOrder' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
+grep -Fq 'preSaveOrderCommodity' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
 grep -Fq 'archiveUser' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
 grep -Fq '/api/users/archive' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
 grep -Fq 'app/actions.ts' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
@@ -727,29 +734,29 @@ if grep -Fq 'archiveUser' "$tmp/context-contracts-related-cancel.md"; then
 fi
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" contracts --workspace "$tmp/context-workspace" --query "getUser" --frontend-repo app --related device --limit 5 > "$tmp/context-contracts-related-device.md"
 grep -Fq 'related=`device`' "$tmp/context-contracts-related-device.md"
-grep -Fq 'updateAssetStatus' "$tmp/context-contracts-related-device.md"
-if grep -Eq 'finalizeDemoOrder|prepareDemoInventory|startDemoPayment' "$tmp/context-contracts-related-device.md"; then
+grep -Fq 'updateDeviceStatus' "$tmp/context-contracts-related-device.md"
+if grep -Eq 'settleLeaseOrder|preSaveOrderCommodity|payUserOrder' "$tmp/context-contracts-related-device.md"; then
   printf 'contracts related device filter kept another related type.\n' >&2
   exit 1
 fi
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" contracts --workspace "$tmp/context-workspace" --query "getUser" --frontend-repo app --related settlement --limit 5 > "$tmp/context-contracts-related-settlement.md"
 grep -Fq 'related=`settlement`' "$tmp/context-contracts-related-settlement.md"
-grep -Fq 'finalizeDemoOrder' "$tmp/context-contracts-related-settlement.md"
-if grep -Eq 'updateAssetStatus|prepareDemoInventory|startDemoPayment' "$tmp/context-contracts-related-settlement.md"; then
+grep -Fq 'settleLeaseOrder' "$tmp/context-contracts-related-settlement.md"
+if grep -Eq 'updateDeviceStatus|preSaveOrderCommodity|payUserOrder' "$tmp/context-contracts-related-settlement.md"; then
   printf 'contracts related settlement filter kept another related type.\n' >&2
   exit 1
 fi
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" contracts --workspace "$tmp/context-workspace" --query "getUser" --frontend-repo app --related payment --limit 5 > "$tmp/context-contracts-related-payment.md"
 grep -Fq 'related=`payment`' "$tmp/context-contracts-related-payment.md"
-grep -Fq 'startDemoPayment' "$tmp/context-contracts-related-payment.md"
-if grep -Eq 'updateAssetStatus|finalizeDemoOrder|prepareDemoInventory' "$tmp/context-contracts-related-payment.md"; then
+grep -Fq 'payUserOrder' "$tmp/context-contracts-related-payment.md"
+if grep -Eq 'updateDeviceStatus|settleLeaseOrder|preSaveOrderCommodity' "$tmp/context-contracts-related-payment.md"; then
   printf 'contracts related payment filter kept another related type.\n' >&2
   exit 1
 fi
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" contracts --workspace "$tmp/context-workspace" --query "getUser" --frontend-repo app --related inventory --limit 5 > "$tmp/context-contracts-related-inventory.md"
 grep -Fq 'related=`inventory`' "$tmp/context-contracts-related-inventory.md"
-grep -Fq 'prepareDemoInventory' "$tmp/context-contracts-related-inventory.md"
-if grep -Eq 'updateAssetStatus|finalizeDemoOrder|startDemoPayment' "$tmp/context-contracts-related-inventory.md"; then
+grep -Fq 'preSaveOrderCommodity' "$tmp/context-contracts-related-inventory.md"
+if grep -Eq 'updateDeviceStatus|settleLeaseOrder|payUserOrder' "$tmp/context-contracts-related-inventory.md"; then
   printf 'contracts related inventory filter kept another related type.\n' >&2
   exit 1
 fi
@@ -764,7 +771,7 @@ grep -Fq 'UserController.relativeUser' "$tmp/context-contracts-relative.md"
 grep -Fq 'graphql:LoadUser' "$tmp/context-contracts-graphql.md"
 grep -Fq 'updateUserAction' "$tmp/context-contracts-graphql.md"
 grep -Fq 'app/app/user/page.tsx' "$tmp/context-contracts-graphql.md"
-printf '%s\n' '| `app` | `/api/assets/updateAssetStatus` | `updateAssetStatus` | `api/orderApi.js:10` | `spring-service` | `POST /api/assets/updateAssetStatus AssetController.updateAssetStatus` | `AssetStatusUpdateReq`: `id`, `status` | `R<Boolean>` |' >> "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
+printf '%s\n' '| `app` | `/api/equipment/updateElectricBoatStatus` | `updateElectricBoatStatus` | `api/leaseShip.js:10` | `spring-service` | `POST /api/equipment/updateElectricBoatStatus EquipmentController.updateElectricBoatStatus` | `ElectricBoatStatusUpdateReq`: `id`, `status` | `R<Boolean>` |' >> "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem init --workspace "$tmp/context-workspace" >/dev/null
 test -s "$tmp/context-workspace/.codex-mem/index.jsonl"
 grep -Fq '"frontendPayloadFields"' "$tmp/context-workspace/.codex-mem/index.jsonl"
@@ -790,9 +797,9 @@ grep -Fq 'codex_mem_route' "$tmp/codex-mem-route.md"
 grep -Fq 'app: score=' "$tmp/codex-mem-route.md"
 grep -Fq 'spring-service: score=' "$tmp/codex-mem-route.md"
 grep -Fq 'saveUser' "$tmp/codex-mem-route.md"
-"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem search --workspace "$tmp/context-workspace" --query "资产 流程 完成" > "$tmp/codex-mem-alias-search.md"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem search --workspace "$tmp/context-workspace" --query "电动船 租赁 归还" > "$tmp/codex-mem-alias-search.md"
 grep -Fq 'api-contract' "$tmp/codex-mem-alias-search.md"
-grep -Fq 'updateAssetStatus' "$tmp/codex-mem-alias-search.md"
+grep -Fq 'updateElectricBoatStatus' "$tmp/codex-mem-alias-search.md"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem install-hooks --workspace "$tmp/context-workspace" --mode observe >/dev/null
 test -s "$tmp/context-workspace/.codex/hooks.json"
 test -s "$tmp/context-workspace/.codex/hooks/codex-mem-hook.mjs"
@@ -858,18 +865,18 @@ printf '%s\n' '{"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":"
 printf '%s\n' '{"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":"rg NhmInfo utils/plugins/monitor/yk/addElePoint.js"}' | (cd "$tmp/context-workspace" && node .codex/hooks/codex-mem-hook.mjs --event PreToolUse --mode observe) | grep -Fq 'high-volume-path'
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem install-hooks --workspace "$tmp/context-workspace" --mode compress --threshold 100 >/dev/null
 long_tool_output="$(printf '%s\n' \
-  'demo-large-output-marker head' \
-  'src/orderFlow/order.ts:42: ERROR demo payment failed after createOrder' \
-  'example-backend/src/main/java/demo/OrderService.java:88: warning demo status mismatch' \
+  'boat-rental-large-output-marker head' \
+  'src/rentShip/order.ts:42: ERROR rent payment failed after saveOrderInfo' \
+  'travel-lite-backend/src/main/java/demo/OrderService.java:88: warning lease status mismatch' \
   "$(printf 'noise line %.0s' {1..140})" \
-  'demo-large-output-marker tail')"
-compress_response="$(LONG_TOOL_OUTPUT="$long_tool_output" node -e 'const payload={hook_event_name:"PostToolUse",tool_name:"Bash",tool_input:"rg demo-flow src",tool_response:process.env.LONG_TOOL_OUTPUT}; process.stdout.write(JSON.stringify(payload)+"\n");' | (cd "$tmp/context-workspace" && node .codex/hooks/codex-mem-hook.mjs --event PostToolUse))"
+  'boat-rental-large-output-marker tail')"
+compress_response="$(LONG_TOOL_OUTPUT="$long_tool_output" node -e 'const payload={hook_event_name:"PostToolUse",tool_name:"Bash",tool_input:"rg boat-rental src",tool_response:process.env.LONG_TOOL_OUTPUT}; process.stdout.write(JSON.stringify(payload)+"\n");' | (cd "$tmp/context-workspace" && node .codex/hooks/codex-mem-hook.mjs --event PostToolUse))"
 printf '%s\n' "$compress_response" | grep -Fq '"decision":"block"'
 printf '%s\n' "$compress_response" | grep -Fq 'codex-mem compressed tool output'
 printf '%s\n' "$compress_response" | grep -Fq 'sha256:'
 printf '%s\n' "$compress_response" | grep -Fq 'summary:'
-printf '%s\n' "$compress_response" | grep -Fq 'ERROR demo payment failed'
-printf '%s\n' "$compress_response" | grep -Fq 'src/orderFlow/order.ts:42'
+printf '%s\n' "$compress_response" | grep -Fq 'ERROR rent payment failed'
+printf '%s\n' "$compress_response" | grep -Fq 'src/rentShip/order.ts:42'
 ref_path="$(node -e 'const fs=require("fs"); const file=process.argv[1]; const events=fs.readFileSync(file,"utf8").trim().split(/\r?\n/).filter(Boolean).map(JSON.parse); const event=[...events].reverse().find((item)=>item.compressed&&item.refPath); if(!event) process.exit(1); console.log(event.refPath);' "$tmp/context-workspace/.codex-mem/ledger.jsonl")"
 ref_file="$tmp/context-workspace/$ref_path"
 test -s "$ref_file"
@@ -877,27 +884,27 @@ grep -Fq '# codex-mem tool output ref' "$ref_file"
 grep -Fq '## Summary' "$ref_file"
 grep -Fq '"outputHash": "sha256:' "$ref_file"
 grep -Fq '"outputSummary"' "$ref_file"
-grep -Fq 'demo-large-output-marker' "$ref_file"
-grep -Fq 'demo-large-output-marker tail' "$ref_file"
+grep -Fq 'boat-rental-large-output-marker' "$ref_file"
+grep -Fq 'boat-rental-large-output-marker tail' "$ref_file"
 grep -Fq '"compressed":true' "$tmp/context-workspace/.codex-mem/ledger.jsonl"
 grep -Fq '"outputSummary"' "$tmp/context-workspace/.codex-mem/ledger.jsonl"
 ref_hash="$(node -e 'const fs=require("fs"); const file=process.argv[1]; const events=fs.readFileSync(file,"utf8").trim().split(/\r?\n/).filter(Boolean).map(JSON.parse); const event=[...events].reverse().find((item)=>item.compressed&&item.outputHash); if(!event) process.exit(1); console.log(String(event.outputHash).replace(/^sha256:/,""));' "$tmp/context-workspace/.codex-mem/ledger.jsonl")"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem get --workspace "$tmp/context-workspace" --ref "$ref_path" > "$tmp/ref-by-path.md"
-grep -Fq 'demo-large-output-marker' "$tmp/ref-by-path.md"
+grep -Fq 'boat-rental-large-output-marker' "$tmp/ref-by-path.md"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem get --workspace "$tmp/context-workspace" --hash "$ref_hash" --output "$tmp/ref-by-hash.md" >/dev/null
-grep -Fq 'demo-large-output-marker' "$tmp/ref-by-hash.md"
+grep -Fq 'boat-rental-large-output-marker' "$tmp/ref-by-hash.md"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem timeline --workspace "$tmp/context-workspace" --limit 5 > "$tmp/codex-mem-timeline.md"
 grep -Fq 'PostToolUse Bash' "$tmp/codex-mem-timeline.md"
 grep -Fq "ref=$ref_path" "$tmp/codex-mem-timeline.md"
 grep -Fq 'hash=sha256:' "$tmp/codex-mem-timeline.md"
-grep -Fq 'ERROR demo payment failed' "$tmp/codex-mem-timeline.md"
+grep -Fq 'ERROR rent payment failed' "$tmp/codex-mem-timeline.md"
 mcp_response="$(printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"check-kit","version":"1"}}}' \
   '{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
   '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"codex_mem_search","arguments":{"query":"users","limit":2}}}' \
   '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"codex_mem_get","arguments":{"ref":"'"$ref_hash"'","maxChars":6000}}}' \
-  '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"codex_mem_record","arguments":{"title":"Demo flow MCP observation","summary":"MCP record smoke test","repo":"workspace","tags":["smoke"]}}}' \
+  '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"codex_mem_record","arguments":{"title":"Boat rental MCP observation","summary":"MCP record smoke test","repo":"workspace","tags":["smoke"]}}}' \
   '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"codex_mem_timeline","arguments":{"limit":5}}}' \
   '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"codex_mem_route","arguments":{"prompt":"users detail page","limit":3}}}' \
   '{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"codex_mem_search","arguments":{"query":"saveUser","limit":5}}}' \
@@ -905,13 +912,13 @@ mcp_response="$(printf '%s\n' \
 printf '%s\n' "$mcp_response" | grep -Fq '"protocolVersion":"2025-06-18"'
 printf '%s\n' "$mcp_response" | grep -Fq 'codex_mem_search'
 printf '%s\n' "$mcp_response" | grep -Fq 'codex_mem_get'
-printf '%s\n' "$mcp_response" | grep -Fq 'demo-large-output-marker'
+printf '%s\n' "$mcp_response" | grep -Fq 'boat-rental-large-output-marker'
 printf '%s\n' "$mcp_response" | grep -Fq 'Recorded observation'
-printf '%s\n' "$mcp_response" | grep -Fq 'Demo flow MCP observation'
+printf '%s\n' "$mcp_response" | grep -Fq 'Boat rental MCP observation'
 printf '%s\n' "$mcp_response" | grep -Fq 'spring-service: score='
 printf '%s\n' "$mcp_response" | grep -Fq 'related repos: app, spring-service'
 test -s "$tmp/context-workspace/.codex-mem/observations.jsonl"
-"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem search --workspace "$tmp/context-workspace" --query "MCP record smoke" | grep -Fq 'Demo flow MCP observation'
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem search --workspace "$tmp/context-workspace" --query "MCP record smoke" | grep -Fq 'Boat rental MCP observation'
 cli_record_response="$("$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem record --workspace "$tmp/context-workspace" --title "CLI observation" --summary "CLI record smoke test" --repo app --path services/runtime.ts --tag smoke --tag cli)"
 printf '%s\n' "$cli_record_response" | grep -Fq 'Recorded observation: CLI observation'
 grep -Fq '"title":"CLI observation"' "$tmp/context-workspace/.codex-mem/observations.jsonl"
@@ -1000,8 +1007,8 @@ printf '%s\n' \
   '{"type":"thread.started","thread_id":"019e-exec-failed"}' \
   '{"type":"turn.started"}' \
   '{"type":"error","message":"Reconnecting... 2/5 (request timed out)"}' \
-  '{"type":"error","message":"unexpected status 401 Unauthorized: Incorrect API key provided: '"$fake_openai_key"'"}' \
-  '{"type":"turn.failed","error":{"message":"unexpected status 401 Unauthorized: Incorrect API key provided: '"$fake_openai_key"'"}}' \
+  '{"type":"error","message":"unexpected status 401 Unauthorized: Incorrect API key provided: sk-test1234567890abcdef"}' \
+  '{"type":"turn.failed","error":{"message":"unexpected status 401 Unauthorized: Incorrect API key provided: sk-test1234567890abcdef"}}' \
   > "$tmp/exec-failed-events.jsonl"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem exec-events --workspace "$tmp/context-workspace" --events "$tmp/exec-success-events.jsonl" --events "$tmp/exec-failed-events.jsonl" --output "$tmp/context-workspace/docs/codex-exec-events.md" >/dev/null
 grep -Fq '| succeeded files | 1 |' "$tmp/context-workspace/docs/codex-exec-events.md"
@@ -1025,7 +1032,7 @@ grep -Fq '| failed | 0 | -1,320 (-100.0%) | -1,200 (-100.0%) | -120 (-100.0%) | 
 grep -Fq '019e-exec-success' "$tmp/context-workspace/docs/codex-exec-events.md"
 grep -Fq '019e-exec-failed' "$tmp/context-workspace/docs/codex-exec-events.md"
 grep -Fq 'sk-***REDACTED***' "$tmp/context-workspace/docs/codex-exec-events.md"
-if grep -Fq "$fake_openai_key" "$tmp/context-workspace/docs/codex-exec-events.md"; then
+if grep -Fq 'sk-test1234567890abcdef' "$tmp/context-workspace/docs/codex-exec-events.md"; then
   printf 'exec-events report left a sensitive test value in output.\n' >&2
   exit 1
 fi

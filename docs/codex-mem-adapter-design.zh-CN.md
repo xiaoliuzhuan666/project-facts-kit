@@ -104,8 +104,8 @@ flowchart TD
 
 ```text
 codex-mem matched:
-- repo: api-service, likely API: /api/order/refund, map: docs/ai-context/api-endpoints.md
-- repo: example-miniapp, likely page: pages/order/detail.vue
+- repo: kt-server, likely API: /api/order/refund, map: docs/ai-context/api-endpoints.md
+- repo: kt-applet, likely page: pages/order/detail.vue
 Use these indexes before broad source search.
 ```
 
@@ -242,7 +242,7 @@ ai-context-kit codex-mem exec-events --workspace /path/to/workspace --events /tm
 2026-06-06 对 Codex CLI 0.137.0-alpha.4 的验证结果：
 
 - `codex-mem install-hooks` 能生成项目 `.codex/hooks.json`，脚本手工执行能写入 ledger。
-- `<example-workspace>` 加入 `~/.codex/config.toml` trusted 后，CLI 仍要求 `exec --skip-git-repo-check`，因为父目录本身不是 Git 仓库。
+- `<kt-workspace>` 加入 `~/.codex/config.toml` trusted 后，CLI 仍要求 `exec --skip-git-repo-check`，因为父目录本身不是 Git 仓库。
 - 非 managed hooks 要先在 Codex CLI 的 hooks review/trust 流程中信任；只加 `--dangerously-bypass-hook-trust` 不会让未启用 hooks 自动执行。
 - 信任后，`codex exec --skip-git-repo-check` smoke test 已能写入 `SessionStart`、`UserPromptSubmit`、`PreToolUse`、`PostToolUse`、`Stop`。
 - `ai-context-kit` v0.3.6 在 hook 写入阶段加入文件锁和重复事件过滤，dashboard 统计时也会忽略旧重复事件。
@@ -261,9 +261,9 @@ codex-mem-plugin/
 
 Codex 文档说明插件可以携带 hooks，插件 hook 可通过 `PLUGIN_ROOT` 和 `PLUGIN_DATA` 找到安装目录和可写数据目录。团队分发时插件更方便；单项目试点时项目 `.codex/` 更直观。
 
-## 对公开样例工作区的预期
+## 对 KT 项目的预期
 
-`<example-workspace>` 已经有第一阶段数据：
+`<kt-workspace>` 已经有第一阶段数据：
 
 - 父目录全量基线：`26,902,543` tokens。
 - 父目录路由：`2,141` tokens。
@@ -294,7 +294,7 @@ Codex-mem 不会替代这些收益，主要增加第二类收益：
 2. 做 SQLite/FTS 索引，先吃 `AGENTS.md`、`project-facts/`、`docs/ai-context-*.md`、CodeGraph 产物摘要。
 3. 做 `UserPromptSubmit` 和 `SessionStart` hooks，只追加轻量上下文，不拦截工具。
 4. 做 `PostToolUse` observe 模式，记录工具输出 token 和 refs，不替换输出。
-5. 在团队私有工作区或公开样例工作区上跑 3 类真实任务：后端 bug、小程序联调、跨端字段问题。
+5. 在 KT 上跑 3 类真实任务：后端 bug、小程序联调、跨端字段问题。
 6. 打开 `PostToolUse` 压缩模式，对超过阈值的输出写 refs 并返回摘要。v0.3.10 已有 smoke 实现，待真实任务验证。
 7. 最后再打开 `PreToolUse` enforce 模式，限制父目录广搜和大文件直读。
 

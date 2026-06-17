@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "schema": "docs/ai-context-workspace-status.schema.json",
+  "generatedBy": "ai-context-kit 0.3.58",
+  "generatedAt": "2026-06-15T00:00:00.000Z",
+  "workspace": ".",
+  "workspaceName": "example-partial",
+  "status": "partial",
+  "alertCodes": [
+    "TOKEN_STATUS_MISSING",
+    "REAL_TASK_EVIDENCE_MISSING"
+  ],
+  "readiness": {
+    "score": 64,
+    "rawScore": 64,
+    "maxScore": 100,
+    "level": "partial",
+    "summary": "64/100: Usable with explicit missing items and source verification.",
+    "factors": [
+      {
+        "id": "workflow",
+        "label": "Context workflow files",
+        "score": 18,
+        "max": 20,
+        "status": "ok",
+        "evidence": [
+          "AGENTS.md",
+          "docs/ai-context-workspace-map.md"
+        ],
+        "missing": []
+      },
+      {
+        "id": "token",
+        "label": "Token visibility",
+        "score": 3,
+        "max": 10,
+        "status": "partial",
+        "evidence": [],
+        "missing": [
+          "ai-context-kit token-status --workspace <path> --json --output docs/ai-context-token-status.json"
+        ]
+      },
+      {
+        "id": "realTaskEvidence",
+        "label": "Real-task evidence",
+        "score": 5,
+        "max": 15,
+        "status": "partial",
+        "evidence": [
+          "docs/ai-context-kit-real-task-ab-audit.md"
+        ],
+        "missing": [
+          "miniapp-integration",
+          "cross-end-field"
+        ]
+      }
+    ]
+  },
+  "token": {
+    "status": "missing",
+    "exists": false,
+    "valid": false,
+    "path": "docs/ai-context-token-status.json",
+    "command": "ai-context-kit token-status --workspace <path> --json --output docs/ai-context-token-status.json"
+  },
+  "audit": {
+    "status": "ok",
+    "exists": true,
+    "valid": true,
+    "path": "docs/ai-context-audit-state.json",
+    "alertCodes": [],
+    "counts": {
+      "contractDrifts": 0,
+      "conflictObservations": 0,
+      "unapprovedFieldMismatches": 0
+    }
+  },
+  "quality": {
+    "status": "missing_evidence",
+    "exists": true,
+    "path": "docs/ai-context-kit-real-task-ab-audit.md",
+    "countedRecords": 1,
+    "candidateRecords": 2,
+    "supportingFiles": 1,
+    "missingCategories": [
+      "miniapp-integration",
+      "cross-end-field"
+    ],
+    "processWarnings": 0
+  },
+  "reports": {
+    "workspaceStatus": {
+      "exists": true,
+      "path": "docs/ai-context-workspace-status.json"
+    },
+    "tokenStatus": {
+      "exists": false,
+      "path": null
+    },
+    "auditState": {
+      "exists": true,
+      "path": "docs/ai-context-audit-state.json"
+    },
+    "realTaskAudit": {
+      "exists": true,
+      "path": "docs/ai-context-kit-real-task-ab-audit.md"
+    }
+  },
+  "claims": {
+    "staticContextSavings": {
+      "status": "unknown",
+      "source": "docs/ai-context-token-status.json"
+    },
+    "realTaskSavings": {
+      "status": "unknown",
+      "source": "docs/ai-context-kit-real-task-ab-audit.md"
+    },
+    "qualityPreservedTokenSavings": {
+      "status": "unknown",
+      "reasons": [
+        "Static token report is not measured.",
+        "Real-task quality evidence is not complete."
+      ]
+    }
+  },
+  "actions": [
+    "Run ai-context-kit token-status --workspace <path> --json --output docs/ai-context-token-status.json.",
+    "Keep token savings claims scoped to static context until counted real-task records cover backend-bug, miniapp-integration and cross-end-field."
+  ]
+}

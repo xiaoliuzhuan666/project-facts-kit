@@ -35,8 +35,8 @@ If these entry phrases are requested but `ai-context-kit` is unavailable, first
 check whether the kit exists at `~/.cache/project-facts-kit`. When it exists,
 run `~/.cache/project-facts-kit/scripts/setup-local-kit.sh` or use the node
 fallback under that directory. When it does not exist, tell the user to clone or
-update the kit repository first; private mirrors may require team authorization,
-VPN, SSO or Git credentials.
+update the public kit repository first; GitHub repository access may require
+network access, account permissions or Git credentials.
 
 1. Read only lightweight entry points first: `AGENTS.md`, README or project entry docs, package manifests such as `package.json`, `pom.xml` or `go.mod`, and any existing `project-facts/`.
 2. Decide whether the target is a single repository or a parent workspace. For a parent workspace, follow `low-token-context-maintainer` before reading implementation files.
@@ -120,16 +120,6 @@ Use this section when a project has produced a candidate item for a shared skill
 6. When a candidate is accepted, update the relevant skill, template or script in this repository, then run the repository checks required by `AGENTS.md`.
 7. If the candidate is really a CLI bug, generated artifact bug or install-script bug, track it as tooling work rather than folding it into a workflow skill.
 
-## Skill Feedback Privacy
-
-Use this section whenever a daily automation, hand-written candidate or upstream review mentions real project evidence.
-
-1. Candidate files must contain only repository-relative paths, symbols, command names, validation status and sanitized summaries.
-2. Do not copy business data, user data, customer data, production data, request or response bodies, database rows, raw logs, screenshots with personal data, stderr dumps, Codex event payloads, tokens, cookies, Authorization headers, API keys, passwords, certificate private keys or production environment values.
-3. Before summarizing logs, API responses, stderr, Codex events or task traces, run `ai-context-kit redact --input <raw-file> --output <redacted-file>` when available and review the output.
-4. If raw evidence is still unsafe or ambiguous after redaction, keep it local and cite only the local evidence path, owner and short sanitized summary.
-5. Project-specific business rules, prices, inventory rules, risk controls, permissions and operation policies stay in the target project's facts. They do not become shared skill guidance unless reviewed as a reusable workflow rule.
-
 ## Skill Feedback Automation Setup
 
 Use this section when a user asks to make daily skill feedback collection run automatically.
@@ -138,10 +128,9 @@ Use this section when a user asks to make daily skill feedback collection run au
 2. If the current directory is a skill/template repository, do not use it as the business candidate entry. Use it only for shared skill review.
 3. For a business candidate automation, route candidates from evidence: `git status --short`, recent commits, `project-facts/changes/`, `handover/`, `evidence.md`, `verification.md`, `project-facts/skill-feedback/`, `docs/skill-performance-log.md`, file paths, module names, pages, endpoints, Controllers, DTOs, API wrappers, packages and logs.
 4. Write a candidate to a child repository only when the repository can be identified from evidence. If ownership is ambiguous, report a confirmation item and do not guess.
-5. Apply the Skill Feedback Privacy rules before writing candidate files or daily summaries.
-6. Prefer generating the prompt with `ai-context-kit automation-prompt --workspace <workspace> --type skill-feedback-candidate` when the CLI is available.
-7. In Codex app, create or update a cron automation with `cwds` pointing to the business repository, business parent folder, or multiple business parent folders. Keep shared skill review as a separate automation in the skill repository.
-8. The automation may create `project-facts/skill-feedback/` candidate files and daily summaries. It must not modify shared skills, templates, scripts, CLI code or approved project facts.
+5. Prefer generating the prompt with `ai-context-kit automation-prompt --workspace <workspace> --type skill-feedback-candidate` when the CLI is available.
+6. In Codex app, create or update a cron automation with `cwds` pointing to the business repository, business parent folder, or multiple business parent folders. Keep shared skill review as a separate automation in the skill repository.
+7. The automation may create `project-facts/skill-feedback/` candidate files and daily summaries. It must not modify shared skills, templates, scripts, CLI code or approved project facts.
 
 ## Lightweight Change Evidence
 
