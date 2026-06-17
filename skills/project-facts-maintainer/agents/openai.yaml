@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Facts Maintainer"
+  short_description: "Adopt, upgrade, and maintain project facts"
+  default_prompt: "Use $project-facts-maintainer to do project-facts-kit first adoption, upgrade an already adopted project without overwriting facts, or maintain approved facts, handovers, evidence, and Skill feedback candidates."

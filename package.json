@@ -1,0 +1,19 @@
+{
+  "name": "project-facts-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Project facts templates, Codex context controls, and team handoff workflows.",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "bin": {
+    "project-facts-kit": "packages/ai-context-kit/bin/ai-context-kit.mjs",
+    "ai-context-kit": "packages/ai-context-kit/bin/ai-context-kit.mjs"
+  },
+  "scripts": {
+    "check": "./scripts/check-kit.sh",
+    "check:context": "node --check packages/ai-context-kit/bin/ai-context-kit.mjs"
+  },
+  "license": "MIT"
+}

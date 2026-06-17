@@ -1,0 +1,10 @@
+{
+  "name": "ai-context-kit",
+  "version": "0.3.55",
+  "description": "Generate workspace AGENTS.md and project-facts for Codex app context control.",
+  "type": "module",
+  "bin": {
+    "ai-context-kit": "bin/ai-context-kit.mjs"
+  },
+  "license": "MIT"
+}

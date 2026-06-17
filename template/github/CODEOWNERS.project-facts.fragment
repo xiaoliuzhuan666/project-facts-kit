@@ -1,0 +1,11 @@
+# Replace @domain-owner and @tool-owner with real GitHub teams or users.
+/.github/CODEOWNERS          @tool-owner
+/project-facts/specs/       @domain-owner
+/project-facts/decisions/   @domain-owner
+/project-facts/changes/     @domain-owner
+/AGENTS.md                   @tool-owner
+/project-facts/skill-feedback/ @tool-owner
+/skills/                     @tool-owner
+/template/                   @tool-owner
+/scripts/install-project-facts.sh @tool-owner
+/scripts/sync-skills.sh      @tool-owner

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Low Token Context"
+  short_description: "Route workspaces and check AI context status"
+  default_prompt: "Use $low-token-context-maintainer to route this workspace, run doctor-style context checks, and keep source reads within a low-token path."
+
+policy:
+  allow_implicit_invocation: true

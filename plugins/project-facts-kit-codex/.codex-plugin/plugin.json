@@ -1,0 +1,33 @@
+{
+  "name": "project-facts-kit-codex",
+  "version": "0.1.0",
+  "description": "Codex skills for project facts, low-token onboarding, and controlled Skill feedback.",
+  "author": {
+    "name": "Project Facts Kit"
+  },
+  "license": "MIT",
+  "keywords": [
+    "project-facts",
+    "codex",
+    "skills",
+    "handoff"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Project Facts Kit",
+    "shortDescription": "Project facts and low-token Codex workflows.",
+    "longDescription": "Adds Codex skills for project-facts maintenance, low-token workspace onboarding, token visibility, and controlled Skill feedback review.",
+    "developerName": "Project Facts Kit",
+    "category": "Productivity",
+    "capabilities": [
+      "Project context",
+      "Skills"
+    ],
+    "defaultPrompt": [
+      "帮我做项目事实 kit 首次接入。",
+      "帮我做项目事实 kit 已接入升级，不覆盖已有事实。",
+      "帮我开启每日 Skill 反哺候选总结，从当前 workspace 自动识别业务仓库。"
+    ],
+    "brandColor": "#2563EB"
+  }
+}
