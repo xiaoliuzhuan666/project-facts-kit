@@ -32,9 +32,10 @@
 
 1. 读取父目录 `AGENTS.md`、`docs/ai-context-workspace-map.md`、`docs/ai-context-scope-report.md`、`ai-context-kit doctor --workspace .` 的仓库角色和 capability status。
 2. 读取当天 `git status --short`、`git log --since=midnight --name-only`、`project-facts/changes/`、`handover/`、`evidence.md`、`verification.md`、`project-facts/skill-feedback/` 和 `docs/skill-performance-log.md`。
-3. 用文件路径、模块名、页面、endpoint、Controller、DTO、API wrapper、包名、错误日志路径和最近改动判断目标子仓库。
-4. 能明确归属时，写入对应子仓库的 `project-facts/skill-feedback/`。
-5. 多个子仓库各自有证据时，分别写候选；归属冲突或证据不足时，只在运行报告里列为待确认，不猜测写入。
+3. 先按仓库做分类表，区分当天已提交、未提交工作区改动、生成的 `AGENTS.md/project-facts`、远端 ahead/behind 状态、业务改动、项目事实证据、验证结果和可复用 Skill/工具候选。
+4. 用文件路径、模块名、页面、endpoint、Controller、DTO、API wrapper、包名、错误日志路径和最近改动判断目标子仓库。
+5. 能明确归属时，写入对应子仓库的 `project-facts/skill-feedback/`。
+6. 多个子仓库各自有证据时，分别写候选；归属冲突或证据不足时，只在运行报告里列为待确认，不猜测写入。
 
 标准提示词可以由 CLI 生成：
 
@@ -48,6 +49,7 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 读取今天新增或修改的 project-facts/changes、project-facts/handover、project-facts/skill-feedback、docs/skill-performance-log.md 和 evidence 记录。
 
 如果当前工作目录是业务父目录，先根据 AGENTS.md、workspace map、git status、最近提交、文件路径、模块名、页面名、endpoint、Controller、DTO、API wrapper、包名和错误日志定位目标子仓库。
+先按仓库输出当天改动分类表，区分已提交、未提交、生成资料、远端同步状态、业务改动、项目事实证据、验证结果和可复用 Skill/工具候选。未提交改动只作为 active work，生成资料和远端同步状态只作为流程或风险证据，不当作已完成业务变更。
 能明确归属时，把候选写到对应子仓库的 project-facts/skill-feedback/；多个子仓库各自有证据时分别写；归属冲突或证据不足时，只在最终报告列待确认项，不猜测写入。
 
 如项目使用 ai-context-kit，先读取 `ai-context-kit doctor --workspace <path>` 的 capability status 和 `ai-context-kit token-status --workspace <path>`，只把缺失、过期或误导状态整理成候选证据，不自动执行初始化或修改共享 Skill。

@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Candidate ID | `SFC-20260618-daily-change-inventory` |
-| Status | `proposed` |
+| Status | `applied` |
 | Created at | `2026-06-18` |
 | Source project | `崆峒` parent workspace |
 | Skill | `project-facts-maintainer`, `low-token-context-maintainer` |
@@ -18,8 +18,8 @@
 | Source task | User asked to review today's modified content, decide whether any experience should feed back into `project-facts-kit-skill-optimization`, update the skill repository after syncing latest remote code, and push the result. |
 | Evidence paths | `<workspace>/AGENTS.md`; `kt-travel-lite-applet/project-facts/change-evidence.md`; `kt-travel-lite-applet` commits `c6a4e28`, `0ad5758`, `3707215`; `ticket-backend` commits `f2b1eeb72`, `d25fed4c3`; uncommitted diffs in `travel-lite-backend` and `kt-travel-lite-h5`; generated `AGENTS.md` and `project-facts/` artifacts observed in several child repositories. |
 | Verification run | `git pull --ff-only` in the skill repository returned `Already up to date`; workspace inventory used `git status --short --branch`, `git log --since='2026-06-18 00:00:00' --name-status`, `git diff --stat`, targeted `git show --stat`, and `sed` on the relevant evidence file. |
-| Reviewer | Tool/library owner |
-| Reviewer decision | `Pending` |
+| Reviewer | User acting as Tool/library owner |
+| Reviewer decision | `Accepted and applied on 2026-06-18` |
 
 ## Today's Workspace Summary
 
@@ -58,6 +58,6 @@ The expected future behavior is:
 
 The applet, ticket and cart behaviors are project-specific and should stay in their owning repositories. The reusable part is the inventory and classification workflow, not the business content.
 
-## Next Action
+## Applied Change
 
-Keep as `proposed` until Tool/library owner review. If accepted, update `project-facts-maintainer` and `low-token-context-maintainer` to add a short daily-change inventory rule for multi-repository workspaces, and mirror the same rule in the automation runbook.
+Applied on 2026-06-18. Updated `project-facts-maintainer`, `low-token-context-maintainer`, plugin skill copies, `ai-context-kit automation-prompt`, and the automation/adoption docs to require a per-repository daily change inventory before shared-skill candidates are created.

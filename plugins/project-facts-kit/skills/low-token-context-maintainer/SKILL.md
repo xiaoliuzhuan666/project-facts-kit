@@ -90,6 +90,15 @@ Use this mode when the user asks to initialize, onboard, index, understand or pr
 6. Produce a workspace-level read-first index such as `docs/business-domains/README.md`, `docs/domain-index.md` or `project-facts/domain-index.md`, depending on the existing project structure.
 7. Stop after the candidate index unless the user selects a domain or the task clearly asks to continue into one domain. Then switch to Business Domain Audit Mode.
 
+## Daily Change Inventory
+
+Use this mode when a user asks what changed today, or when a daily skill-feedback task runs from a parent workspace.
+
+1. Build a per-repository classification table before writing candidate files. Separate committed-today changes, uncommitted diffs, generated `AGENTS.md` or `project-facts/` artifacts, remote sync state, business changes, project-facts evidence, verification results, and reusable skill/tooling candidates.
+2. Treat uncommitted diffs as active work, generated facts as process artifacts, and remote-behind/ahead state as sync risk. Do not summarize those as completed business changes.
+3. Keep project-specific business behavior inside the target repository's project facts or evidence. Promote only reusable workflow, routing, verification or tooling lessons to shared-skill candidates.
+4. If one repository clearly owns the evidence, write only there. If several repositories have independent evidence, write separate candidates. If ownership is unclear, list a confirmation item and do not guess.
+
 ## Business Domain Audit Mode
 
 Use this mode when the user asks to build reusable investigation material for one business domain such as orders, payments, bookings, inventory, member accounts, coupons, subscriptions, billing, fulfillment, refunds, settlement or notifications.

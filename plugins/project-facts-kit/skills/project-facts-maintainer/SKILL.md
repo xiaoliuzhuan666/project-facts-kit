@@ -90,6 +90,7 @@ Use this section when a user asks to improve a skill from real project usage.
 4. Keep optimization items concrete. Each item should name the skill section or tool behavior to change, the evidence that motivated it, and the expected future behavior.
 5. Include dependency and lint lessons from implementation tasks when they affect future skill behavior, especially legacy project migrations where build success and lint style debt differ.
 6. When recording local paths, avoid publishing machine-specific absolute paths outside the local workspace. Use placeholders such as `<workspace>`, `<repo>`, `<kit-cache>`, or `<external>`.
+7. For multi-repository "what changed today" or daily feedback tasks, create a per-repository inventory before proposing upstream changes. Separate today's commits, uncommitted working-tree diffs, generated `AGENTS.md` or `project-facts/` artifacts, remote sync state, business behavior changes, verification evidence, and reusable skill/tooling candidates. Treat uncommitted work as active work, generated facts as process artifacts, and project-specific behavior as target-repository facts unless it exposes a reusable workflow or tooling issue.
 
 ## Migration Change Records
 

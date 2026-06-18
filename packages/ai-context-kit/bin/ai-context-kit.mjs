@@ -5952,12 +5952,14 @@ ${repoHints}
 1. 如果 automation 的工作目录本身就是单个 Git 仓库，优先把它作为目标业务仓库。
 2. 如果工作目录是业务父目录，先读父目录 AGENTS.md、docs/ai-context-workspace-map.md、docs/ai-context-scope-report.md 和 ai-context-kit doctor --workspace . 的结果；这些文件不存在时，按子目录中的 .git、package.json、pom.xml、go.mod、pages.json、README、project-facts/ 判断仓库角色。
 3. 优先看当天新增或修改的证据：git status --short、今天的 git log --since=midnight --name-only、project-facts/changes/、project-facts/handover/、project-facts/skill-feedback/、docs/skill-performance-log.md、evidence.md、verification.md。
-4. 结合文件路径、模块名、页面名、endpoint、Controller、DTO、API wrapper、包名、错误日志中的路径，判断候选属于哪个子仓库或哪条跨仓库链路。
-5. 多个仓库都有独立证据时，分别写候选；证据无法明确归属，或两个候选仓库冲突时，只在最终报告列出待确认项，不要猜测写入某个仓库。
+4. 先为每个相关仓库做一张分类表，至少区分：当天已提交、未提交工作区改动、生成的 AGENTS.md/project-facts、远端 ahead/behind 状态、业务改动、project-facts 证据、验证结果、可复用 Skill/工具候选。
+5. 结合文件路径、模块名、页面名、endpoint、Controller、DTO、API wrapper、包名、错误日志中的路径，判断候选属于哪个子仓库或哪条跨仓库链路。
+6. 多个仓库都有独立证据时，分别写候选；证据无法明确归属，或两个候选仓库冲突时，只在最终报告列出待确认项，不要猜测写入某个仓库。
 
 候选筛选规则：
 - 只记录可以改进共享 Skill、项目事实模板、低 token 路由、CLI、hooks、CodeGraph/RAG/memory 使用方式的经验。
 - 项目专属业务规则留在业务项目事实里，不写成共享 Skill 候选。
+- 未提交工作区改动只能当作 active work；生成资料和远端同步状态只能当作流程或风险证据；不要把它们描述成已完成业务变更。
 - 只有聊天、AI 总结或没有可追溯文件/命令时，状态写 needs-evidence。
 - 有真实任务来源、证据路径和验证结果时，状态写 proposed。
 

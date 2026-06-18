@@ -258,6 +258,7 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 ```text
 读取今天的项目事实变更、handover、evidence、skill-feedback 和 skill-performance-log。
 如果 automation 工作目录是业务父目录，先根据 AGENTS.md、workspace map、git status、最近提交、文件路径、模块名、页面、endpoint、Controller、DTO、API wrapper、包名和错误日志定位目标子仓库。
+先按仓库整理当天改动分类表，区分已提交、未提交、生成资料、远端同步状态、业务改动、项目事实证据、验证结果和可复用 Skill/工具候选。
 能明确归属时，把候选写入对应子仓库的 project-facts/skill-feedback/；多个仓库各自有证据时分别写；归属冲突时只列待确认，不猜测写入。
 请只整理可以反哺到共享 Skill 的候选项，不要修改正式 Skill。
 每个候选项必须包含：来源任务、使用的 skill、观察到的有用/缺失/误导行为、证据路径、实际验证结果、是否跨项目适用、是否可能只是项目专属规则、建议进入哪个 skill 小节。
@@ -296,7 +297,7 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 2. 代码现状只能写成 `OBSERVED`；没有责任人或审阅记录时，不写成 `APPROVED`。
 3. 发现 Skill 可改进点时，写候选文件并附来源、验证和适用范围，不直接改共享 Skill。
 
-自动化需要一个入口目录，但不要求普通使用者指定每个子仓库路径。入口可以是当前业务仓库、业务父目录或 Codex app 当前 workspace。任务先自动识别当天证据属于哪个仓库，再写入对应的 `project-facts/skill-feedback/`；识别不清时只列待确认项。团队维护者也可以在自动化配置中传多个 `cwds`，覆盖一组常用业务父目录。
+自动化需要一个入口目录，但不要求普通使用者指定每个子仓库路径。入口可以是当前业务仓库、业务父目录或 Codex app 当前 workspace。任务先自动识别当天证据属于哪个仓库，再按仓库分类已提交、未提交、生成资料、远端同步状态、业务改动、项目事实证据和可复用候选，最后写入对应的 `project-facts/skill-feedback/`；识别不清时只列待确认项。团队维护者也可以在自动化配置中传多个 `cwds`，覆盖一组常用业务父目录。
 
 ## 老项目第一次接手
 

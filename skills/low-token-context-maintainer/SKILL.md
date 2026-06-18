@@ -123,8 +123,9 @@ Use this mode when a recurring automation runs from a parent folder or current C
 2. If it is a parent workspace, read lightweight routing files first: parent `AGENTS.md`, `docs/ai-context-workspace-map.md`, `docs/ai-context-scope-report.md`, and `doctor` output when available.
 3. Locate candidate child repositories from `.git`, package manifests, `pom.xml`, `go.mod`, `pages.json`, README titles and `project-facts/`.
 4. Route a daily skill-feedback candidate by today's evidence: modified files, recent commit paths, change directories, handover, evidence records, skill-feedback files, performance logs, endpoint names, page names, Controller/DTO/API wrapper names and log paths.
-5. If one repository clearly owns the evidence, write only there. If multiple repositories have separate evidence, create separate candidates. If ownership is unclear, list a confirmation item and do not write into a guessed repository.
-6. Use `ai-context-kit automation-prompt --workspace <workspace> --type skill-feedback-candidate` when a Codex app automation prompt is needed. This command prints prompt text only; it does not create the automation.
+5. For daily change summaries or skill feedback, make a classification table before writing files. Separate committed-today changes, uncommitted diffs, generated `AGENTS.md` or `project-facts/` artifacts, remote sync state, business changes, project-facts evidence, verification results, and reusable skill/tooling candidates. Treat uncommitted diffs as active work, generated facts as process artifacts, and business changes as target-repository facts unless they reveal a reusable workflow or tooling issue.
+6. If one repository clearly owns the evidence, write only there. If multiple repositories have separate evidence, create separate candidates. If ownership is unclear, list a confirmation item and do not write into a guessed repository.
+7. Use `ai-context-kit automation-prompt --workspace <workspace> --type skill-feedback-candidate` when a Codex app automation prompt is needed. This command prints prompt text only; it does not create the automation.
 
 ## Business Domain Audit Mode
 

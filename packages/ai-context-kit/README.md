@@ -119,8 +119,11 @@ Use `--repos <name>` to select a single repository.
 or update automations. Use `--type skill-feedback-candidate` for a business
 workspace or parent folder that should summarize daily shared-skill candidates,
 and `--type skill-feedback-review` for the shared Skill repository review job.
-The business prompt routes candidates to child repositories from today's
-evidence, so users do not need to specify every child repository path.
+The business prompt first asks for a per-repository inventory of today's
+commits, uncommitted diffs, generated project-facts artifacts, remote sync
+state, business changes, verification, and reusable skill/tooling candidates.
+It then routes candidates to child repositories from today's evidence, so users
+do not need to specify every child repository path.
 
 ## codex-mem observe mode and experimental compress mode
 

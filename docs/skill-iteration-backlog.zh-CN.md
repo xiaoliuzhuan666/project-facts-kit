@@ -25,7 +25,6 @@
 
 | 候选项 | 来源 | 建议动作 | 状态 | Reviewer 备注 |
 | --- | --- | --- | --- | --- |
-| `SFC-20260618-daily-change-inventory` | `docs/skill-feedback/2026-06-18-daily-change-inventory.md` | `improve_skill` | `proposed` | 待确认是否把“当天改动盘点先分 committed、uncommitted、generated facts、remote sync、business change、skill candidate”写入共享 Skill 和自动化 runbook。 |
 | `<SFC-YYYYMMDD-name>` | `<project-facts/skill-feedback/...>` | `<improve_skill/new_skill/tooling_fix>` | `proposed` | `<fill>` |
 
 ## 已优化到 skill 的项目
@@ -53,6 +52,7 @@
 | 服务端陆续给适配文档时，要记录旧 endpoint、新路径或兼容路径、wrapper、消费页面、字段适配和真实环境验证缺口 | `project-facts-maintainer` | 字典、支付方式、售卖站点、打印模板文档分批到达，前端需要持续对照调整 | `Migration Change Records` |
 | 已知双端文件路径时先直读文件 | `low-token-context-maintainer`, `project-facts-maintainer` | H5 和小程序结算页路径已知时，先直接看 `pagesA/order/settlement.vue` 比先查 generated map 更快 | `Fast Cross-Repository Fix Mode`, `Cross-Client Parity Records` |
 | 小修记录只写四件事 | `project-facts-maintainer` | H5 结算页缺 `selectedChildCommodities` 本质是单页面字段修复，只需要记录变更、证据、已跑验证和未跑项 | `Lightweight Change Evidence` |
+| 多仓库当天改动先做分类盘点 | `project-facts-maintainer`, `low-token-context-maintainer`, `ai-context-kit` | `SFC-20260618-daily-change-inventory` 记录同一天存在已提交业务改动、未提交工作区改动、生成事实目录和远端落后状态，需要先分类再判断是否可反哺 | `Skill Performance Evidence`, `Skill Feedback Automation Setup`, `Automation Workspace Routing`, `automation-prompt` |
 
 ## 已改 CLI 的项目
 

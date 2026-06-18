@@ -107,6 +107,7 @@ Use this section when a user asks to improve a skill from real project usage.
 4. Keep optimization items concrete. Each item should name the skill section or tool behavior to change, the evidence that motivated it, and the expected future behavior.
 5. Include dependency and lint lessons from implementation tasks when they affect future skill behavior, especially legacy project migrations where build success and lint style debt differ.
 6. When recording local paths, avoid publishing machine-specific absolute paths outside the local workspace. Use placeholders such as `<workspace>`, `<repo>`, `<kit-cache>`, or `<external>`.
+7. For multi-repository "what changed today" or daily feedback tasks, create a per-repository inventory before proposing upstream changes. Separate today's commits, uncommitted working-tree diffs, generated `AGENTS.md` or `project-facts/` artifacts, remote sync state, business behavior changes, verification evidence, and reusable skill/tooling candidates. Treat uncommitted work as active work, generated facts as process artifacts, and project-specific behavior as target-repository facts unless it exposes a reusable workflow or tooling issue.
 
 ## Skill Feedback Intake And Review
 
@@ -127,10 +128,11 @@ Use this section when a user asks to make daily skill feedback collection run au
 1. Do not require ordinary users to name every child repository path. Use the current workspace or business parent folder as the automation entry when it contains the relevant business repositories.
 2. If the current directory is a skill/template repository, do not use it as the business candidate entry. Use it only for shared skill review.
 3. For a business candidate automation, route candidates from evidence: `git status --short`, recent commits, `project-facts/changes/`, `handover/`, `evidence.md`, `verification.md`, `project-facts/skill-feedback/`, `docs/skill-performance-log.md`, file paths, module names, pages, endpoints, Controllers, DTOs, API wrappers, packages and logs.
-4. Write a candidate to a child repository only when the repository can be identified from evidence. If ownership is ambiguous, report a confirmation item and do not guess.
-5. Prefer generating the prompt with `ai-context-kit automation-prompt --workspace <workspace> --type skill-feedback-candidate` when the CLI is available.
-6. In Codex app, create or update a cron automation with `cwds` pointing to the business repository, business parent folder, or multiple business parent folders. Keep shared skill review as a separate automation in the skill repository.
-7. The automation may create `project-facts/skill-feedback/` candidate files and daily summaries. It must not modify shared skills, templates, scripts, CLI code or approved project facts.
+4. Before writing candidates, build a daily inventory table for each repository: committed today, uncommitted diffs, generated facts, remote sync state, business change, project-facts evidence, verification, and possible shared-skill candidate. Use the table to filter out active local work, sync risks and business-only changes before creating any upstream candidate.
+5. Write a candidate to a child repository only when the repository can be identified from evidence. If ownership is ambiguous, report a confirmation item and do not guess.
+6. Prefer generating the prompt with `ai-context-kit automation-prompt --workspace <workspace> --type skill-feedback-candidate` when the CLI is available.
+7. In Codex app, create or update a cron automation with `cwds` pointing to the business repository, business parent folder, or multiple business parent folders. Keep shared skill review as a separate automation in the skill repository.
+8. The automation may create `project-facts/skill-feedback/` candidate files and daily summaries. It must not modify shared skills, templates, scripts, CLI code or approved project facts.
 
 ## Lightweight Change Evidence
 
