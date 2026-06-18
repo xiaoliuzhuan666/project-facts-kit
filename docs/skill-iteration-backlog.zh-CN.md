@@ -25,6 +25,7 @@
 
 | 候选项 | 来源 | 建议动作 | 状态 | Reviewer 备注 |
 | --- | --- | --- | --- | --- |
+| `SFC-20260618-daily-change-inventory` | `docs/skill-feedback/2026-06-18-daily-change-inventory.md` | `improve_skill` | `proposed` | 待确认是否把“当天改动盘点先分 committed、uncommitted、generated facts、remote sync、business change、skill candidate”写入共享 Skill 和自动化 runbook。 |
 | `<SFC-YYYYMMDD-name>` | `<project-facts/skill-feedback/...>` | `<improve_skill/new_skill/tooling_fix>` | `proposed` | `<fill>` |
 
 ## 已优化到 skill 的项目
