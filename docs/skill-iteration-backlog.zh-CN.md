@@ -26,6 +26,7 @@
 | 候选项 | 来源 | 建议动作 | 状态 | Reviewer 备注 |
 | --- | --- | --- | --- | --- |
 | `<SFC-YYYYMMDD-name>` | `<project-facts/skill-feedback/...>` | `<improve_skill/new_skill/tooling_fix>` | `proposed` | `<fill>` |
+| `SFC-20260623-multistep-form-return-state` | `docs/skill-feedback/2026-06-23-multistep-form-return-state.md` | `improve_skill` | `proposed` | 多步表单返回态属于可复用前端流程检查；具体路由、字段和 `advancePreDays` 保持为项目专属事实，待 Tool/library owner 决定是否进入 `project-facts-maintainer` 与 `low-token-context-maintainer`。 |
 
 ## 已优化到 skill 的项目
 
