@@ -21,12 +21,38 @@
 | `rejected` | 不进入共享 Skill，记录原因 |
 | `applied` | 已改入 `skills/`、模板、脚本或 CLI，并完成资料库检查 |
 
+## 2026-07-14 评审状态
+
+| 状态 | 数量 | 候选项 | 评审结论 |
+| --- | ---: | --- | --- |
+| `proposed` | 1 | `SFC-20260623-multistep-form-return-state` | 通用工作流候选；真实任务、证据路径、验证结果和适用范围已记录，但 Tool/library owner 仍为 Pending，完整真实下单返回链路为 `Not run`。 |
+| `needs-evidence` | 0 | 无 | 本次没有新增需要改为此状态的正式候选。 |
+| `accepted` | 0 | 无 | 本次没有只有 owner 接受、尚未应用的候选。 |
+| `rejected` | 0 | 无 | 本次没有新增拒绝项。 |
+| `applied` | 1 | `SFC-20260618-daily-change-inventory` | 通用多仓库工作流改进；候选文件记录 owner 接受，提交 `d89efa1` 已把规则写入 Skill、CLI prompt 和文档。 |
+
+分类结果：
+
+- 通用工作流改进：以上 2 项。
+- 项目专属业务规则：`multistep-form-return-state` 中的具体路由、字段和 `advancePreDays`，继续留在 `kt-travel-lite-web` 项目事实中，不进入共享 Skill。
+- CLI/脚本缺陷：`doctor` stale 误报、`contracts` 0 命中仍是工具缺陷调查项，不因本次候选评审改状态。
+- 模板缺陷、低 token 路由缺口、CodeGraph/RAG/memory layer 候选：本次未发现新的正式候选。
+
+证据检查：
+
+| 候选项 | 真实任务来源 | 证据路径 | 验证结果 | 适用范围 | Reviewer/owner |
+| --- | --- | --- | --- | --- | --- |
+| `SFC-20260623-multistep-form-return-state` | 已记录 | 已记录，业务项目文件仍可读取 | `git diff --check`、`build:dev` 和入口页检查有记录；完整真实返回链路 `Not run`；定向 lint 因历史问题失败 | 通用检查流程与项目专属字段已分开 | Pending |
+| `SFC-20260618-daily-change-inventory` | 已记录 | 已记录 | 工作区盘点命令有记录；应用提交为 `d89efa1` | 通用多仓库盘点流程与项目业务改动已分开 | User acting as Tool/library owner，Accepted and applied |
+
+可进入后续 PR 的候选：无。当前没有 `accepted` 且尚未应用的候选。
+
 ## 待评审候选项
 
 | 候选项 | 来源 | 建议动作 | 状态 | Reviewer 备注 |
 | --- | --- | --- | --- | --- |
 | `<SFC-YYYYMMDD-name>` | `<project-facts/skill-feedback/...>` | `<improve_skill/new_skill/tooling_fix>` | `proposed` | `<fill>` |
-| `SFC-20260623-multistep-form-return-state` | `docs/skill-feedback/2026-06-23-multistep-form-return-state.md` | `improve_skill` | `proposed` | 多步表单返回态属于可复用前端流程检查；具体路由、字段和 `advancePreDays` 保持为项目专属事实，待 Tool/library owner 决定是否进入 `project-facts-maintainer` 与 `low-token-context-maintainer`。 |
+| `SFC-20260623-multistep-form-return-state` | `docs/skill-feedback/2026-06-23-multistep-form-return-state.md` | `improve_skill` | `proposed` | 2026-07-14 复核：真实任务、证据路径、验证结果和适用范围已记录；Reviewer 仍为 Pending，不能标为 `accepted`。具体路由、字段和 `advancePreDays` 留在目标项目事实。 |
 
 ## 已优化到 skill 的项目
 
@@ -69,6 +95,14 @@
 | `doctor` stale 误报 | 需要查 `ai-context-kit` stale 检测逻辑，不属于本次 skill 文案优化 |
 | `contracts` 0 命中问题 | 需要查索引生成或查询匹配逻辑，不属于本次 skill 文案优化 |
 | `npm run lint` 被 `.eslintignore` 影响 | 属于目标业务项目配置问题，不改 project-facts-kit |
+
+## 最近评审记录
+
+| 日期 | 候选项 | 结果 | 评审摘要 | 下一步 |
+| --- | --- | --- | --- | --- |
+| 2026-07-14 | 全部候选 | 状态不变 | 自上次运行后没有新增或修改候选文件，也没有新的 Tool/library owner 记录。2 个候选的来源、证据、验证、适用范围和 reviewer 字段均已复核。 | `SFC-20260623-multistep-form-return-state` 等 owner 决定；通过前不改正式 Skill 或工具。 |
+| 2026-07-13 | `SFC-20260623-multistep-form-return-state` | `proposed` | 候选有真实来源和可查证据；`../崆峒/kt-travel-lite-web/project-facts/verification.md` 记录 build 通过、入口页浏览器检查、完整真实链路未验证、lint 失败来自历史债务。没有 Tool/library owner 接受记录。 | 等 Tool/library owner 审阅；通过前不改 `skills/`、`template/`、`scripts/` 或 CLI。 |
+| 2026-07-13 | `SFC-20260618-daily-change-inventory` | `applied` | 候选文件记录 user 作为 Tool/library owner 接受；提交 `d89efa1` 和当前 Skill、CLI prompt、文档内容可确认已应用。 | 无需动作。 |
 
 ## 后续建议
 
