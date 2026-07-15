@@ -40,9 +40,21 @@ bash -lc 'set -e; KIT="$HOME/.cache/project-facts-kit"; REPO="https://github.com
 
 本机 kit 更新、项目升级、自动化 prompt 和维护仓库校验命令集中放在 [Project Facts Kit 更新命令速查](project-facts-kit-update-commands.zh-CN.md)。
 
+对普通项目，CLI 入口保持为两条，不因模板或 Plugin 版本更新而更换：
+
+```bash
+# 未接入
+~/.cache/project-facts-kit/scripts/install-project-facts.sh . --lite && ai-context-kit onboard -w .
+
+# 已接入
+ai-context-kit upgrade -w .
+```
+
+首次接入的单行命令会安装轻量模板；项目还需要随仓库分发 Skill 或 helper 时，维护者才使用后文的其他安装脚本参数。
+
 对没有现成事实制度的项目，推荐按三步接入，不让工具直接替代项目判断：
 
-1. 生成模板：用 `install-project-facts.sh` 安装 `project-facts/`、`AGENTS.fragment.md` 和辅助脚本。老项目先用 `--lite`，需要持续记录行为变化的项目用完整模板。
+1. 生成模板：用 `install-project-facts.sh` 安装 `project-facts/` 和 `AGENTS.fragment.md`。老项目先用 `--lite`，需要持续记录行为变化的项目用完整模板；辅助脚本只在显式使用 `--with-helper-scripts` 时安装。
 2. 人工整理项目专属 `AGENTS.md`：把 `AGENTS.fragment.md` 合并进根 `AGENTS.md`，同时写入本项目真实的目录结构、验证命令、敏感路径、不要默认读取的大目录和项目特殊规则。
 3. 填写首批事实索引：至少维护 `project.md`、`glossary.md`、`runtime.md`、`iteration-plan.md`、`handover/current.md`，并按当前项目形态增加 `domain-index.md`、`context-boundary.md` 或当前业务域 `spec.md`。现有代码和测试只能标 `OBSERVED`，责任人确认前不要写成 `APPROVED`。
 
@@ -77,6 +89,7 @@ Agent 应优先使用当前打开的 workspace 或业务父目录作为入口，
 当团队习惯从一个父目录打开 Codex app，而这个目录下实际是多个独立 Git 仓库时，先执行：
 
 ```bash
+ai-context-kit inspect --workspace /absolute/path/to/parent
 ai-context-kit doctor --workspace /absolute/path/to/parent
 ai-context-kit onboard --workspace /absolute/path/to/parent
 ai-context-kit agents --workspace /absolute/path/to/parent
@@ -95,6 +108,7 @@ ai-context-kit editor-tasks --workspace /absolute/path/to/parent
 如果从本仓库根目录 `npm link`，也可以使用：
 
 ```bash
+project-facts-kit context inspect --workspace /absolute/path/to/parent
 project-facts-kit context doctor --workspace /absolute/path/to/parent
 project-facts-kit context onboard --workspace /absolute/path/to/parent
 project-facts-kit context upgrade --workspace /absolute/path/to/parent
@@ -126,7 +140,7 @@ project-facts-kit context editor-tasks --workspace /absolute/path/to/parent
       backend-route-controller-map.md、api-contract-map.md 或 api-endpoints.md
 ```
 
-从父目录开始时，先用 `onboard` 或 `doctor` 判断缺什么，不要先广泛搜索源码。`onboard` 会先补缺失的流程材料，再输出 `doctor`、`token-status` 和 `capability actions`；`upgrade` 刷新生成资料后也会输出同样状态。`doctor` 会输出两组信息：`workflow artifacts` 表示路由、索引和项目事实文件是否存在；`capability status` 表示 CodeGraph、token 报告、observe hooks、session usage、graph、real-task A/B 和 redact 是否可用或需要处理。`capability actions` 会把 CodeGraph 和 token 可见性的下一步命令整理出来。缺流程材料时用 `onboard`、`agents` 或 `repair` 生成缺失项；已有契约表被标为 `stale` 时再用 `upgrade` 或 `init` 刷新生成资料。
+从父目录开始时，写入范围不明确就先用 `inspect` 识别仓库和已有规范；它的写入数为 0。确认允许创建生成资料后再用 `onboard`，它会补缺失的流程材料并输出 `doctor`、`token-status` 和 `capability actions`；`upgrade` 刷新工具拥有的生成资料后也会输出同样状态。`doctor` 会输出两组信息：`workflow artifacts` 表示路由、索引和项目事实文件是否存在；`capability status` 表示 CodeGraph、token 报告、observe hooks、session usage、graph、real-task A/B 和 redact 是否可用或需要处理。缺流程材料时用 `onboard`、`agents` 或 `repair`；已有契约表被标为 `stale` 时再用 `upgrade` 或 `init`。
 
 `capability status` 的处理规则：
 
@@ -139,7 +153,7 @@ project-facts-kit context editor-tasks --workspace /absolute/path/to/parent
 | `observe hooks` / `session token usage` | 真实任务 token 数据是否可见 | 需要长期观察时启用 `install-hooks --mode observe`，再用 `sessions` |
 | `ai-context-graph` / `real-task A/B` / `redact` | 可选结构图、真实任务证据和脱敏能力 | 按任务需要使用，不作为默认业务事实 |
 
-`facts`、`agents`、`measure`、`tokens`、`summary`、`dashboard`、`codegraph --repos <name>` 也可以单独执行。`tokens` 通过 `repomix@latest` 测量 token；`summary` 在终端打印短摘要；`dashboard` 从最新 token 报告生成 `docs/ai-context-token-dashboard.md`。小型仓库可能出现生成索引比源码 token 更多的结果，以报告数字为准。跨端分析需要检查请求/响应 DTO、DTO copy/mapper 和新旧接口路径，避免只停留在页面或接口清单。
+`facts`、`agents`、`measure`、`tokens`、`summary`、`dashboard`、`codegraph --repos <name>` 也可以单独执行。`tokens` 通过固定的 `repomix@1.16.1` 测量 token，并保留默认安全扫描；`summary` 在终端打印短摘要；`dashboard` 从最新 token 报告生成 `docs/ai-context-token-dashboard.md`。小型仓库可能出现生成索引比源码 token 更多的结果，以报告数字为准。跨端分析需要检查请求/响应 DTO、DTO copy/mapper 和新旧接口路径，避免只停留在页面或接口清单。
 
 需要把节省数字展示给使用者时，按场景选择入口：静态节省看 `docs/ai-context-token-dashboard.md`；终端或编辑器任务看 `ai-context-kit token-status --workspace <path>`；IDE 面板、插件或团队脚本读取 `ai-context-kit token-status --workspace <path> --json --output docs/ai-context-token-status.json`；真实任务用 `codex-mem sessions` 或 `exec-events` 记录 session tokens；Codex app、CLI 和 Codex IDE extension 可通过 `codex-mem install-hooks --mode observe` 在 `Stop` 事件返回本地 token snapshot。VS Code 兼容编辑器可运行 `ai-context-kit editor-tasks --workspace <path>` 生成 `.vscode/tasks.json`，其中包含写入 token status JSON 的任务；其他 IDE 可把同样命令做成 run configuration 或终端别名。
 
@@ -147,7 +161,7 @@ project-facts-kit context editor-tasks --workspace /absolute/path/to/parent
 
 如果父目录已经从“多个独立 Git 仓库的集合”演变为同一个业务平台的事实入口，例如跨端文档、部署脚本、接口契约和 Agent 指令都在父目录维护，可以考虑把它迁移为 monorepo。迁移过程不要只改 remote；应先备份旧仓库历史，建立父级 `.gitignore`，移走子目录 `.git`，初始化父级 Git，推送到新平台仓库，并同步更新 `AGENTS.md`、workspace map、scope report 和交接说明。完整流程见 [多仓库迁移为 monorepo 实操 runbook](monorepo-migration-runbook.zh-CN.md)。
 
-默认情况下，`ai-context-kit` 不覆盖已有 `AGENTS.md` 或项目事实文件。需要重建生成文件时才使用 `--force`，且只重写带有 `generated-by: ai-context-kit` 标记的文件；没有该标记的项目事实视为人工维护内容并跳过。
+默认情况下，`ai-context-kit` 不覆盖已有 `AGENTS.md` 或项目事实文件。默认报告路径也检查生成归属：Markdown 使用 `generated-by: ai-context-kit` 标记，JSON、JSONL、hook 脚本和 `.gitignore` 使用各自的生成标记。为兼容旧版本，只有固定文件名且同时匹配严格历史签名的旧生成 Markdown 才能在没有标记时刷新；其他同名文件即使使用 `--force` 也会跳过。显式 `--output` 表示用户已经指定写入目标，不使用默认路径的归属判断。
 
 外部低 token 工具的取舍见 [Codex 低 token 工具调研](codex-low-token-tooling-research.zh-CN.md)。当前优先采用父目录路由、子仓库事实索引、CodeGraph 按需查询、`ccusage` 统计和规则版 `redact`；长任务记忆、`opf`/privacy-filter 增强脱敏和 agent harness 替换先作为第二阶段试点。
 
@@ -177,7 +191,7 @@ project-facts-kit context editor-tasks --workspace /absolute/path/to/parent
 
 L1 模式不会安装 `changes/_template/`、`decisions/` 或 `integration/github/`。`runtime.md` 会随 L1 安装，用来记录部署、数据目录、反向代理、资源限制和发布验证入口。当项目开始持续记录行为变化，再按完整模板补齐。
 
-安装脚本还会复制两个可选辅助脚本到目标仓库 `scripts/`：`generate-repo-map.sh` 用于生成 `project-facts/repo_map.txt`，`sync-skills.sh` 用于本地 AI 规则和 Skill 软链接。目标仓库已有同名脚本时安装会拒绝覆盖。
+安装脚本默认不修改目标仓库 `scripts/`。显式增加 `--with-helper-scripts` 后才复制 `generate-repo-map.sh` 和 `sync-skills.sh`；目标仓库已有同名脚本时安装会拒绝覆盖。
 
 ## 完整模板
 
@@ -224,7 +238,7 @@ L1 模式不会安装 `changes/_template/`、`decisions/` 或 `integration/githu
 
 Skill 提供工作步骤，不包含项目自身的业务批准内容。
 
-已经接入过本项目的仓库，不需要重新安装或重写项目事实。使用升级模式只补新版候选模板、最新 `AGENTS` 片段和缺失辅助脚本；已有 `project.md`、`runtime.md`、`specs/`、`handover/` 和人工维护的 `AGENTS.md` 不会被覆盖：
+已经接入过本项目的仓库，不需要重新安装或重写项目事实。使用升级模式只补新版候选模板、最新 `AGENTS` 片段和可选 Skill；已有 `project.md`、`runtime.md`、`specs/`、`handover/` 和人工维护的 `AGENTS.md` 不会被覆盖。需要缺失 helper 时另加 `--with-helper-scripts`：
 
 ```bash
 ./scripts/install-project-facts.sh /absolute/path/to/project \

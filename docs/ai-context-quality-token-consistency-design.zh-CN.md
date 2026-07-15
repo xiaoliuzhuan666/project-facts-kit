@@ -2,6 +2,10 @@
 
 整理日期：2026-06-15
 
+## 实现状态说明
+
+本文保留 2026-06-15 的目标设计。到 `ai-context-kit 0.3.60` 为止，`install`、`quickstart`、`audit`、`status`、`--fail-on-warning`、`--with-ci` 和 `--inject-package-scripts` 尚未实现，文中相关内容均视为待评审设计，不是可执行说明。当前命令以 [团队快速使用](team-quick-start.zh-CN.md) 和 `ai-context-kit --help` 为准。
+
 ## 背景
 
 团队的实际使用方式是：多人从 Codex app、CLI、VS Code/Cursor/Windsurf 等入口打开同一批项目；参与者可能使用不同模型、不同编辑器和不同上下文窗口。项目理解如果只停留在聊天、个人 memory 或某个模型上下文里，很容易出现三个问题：
@@ -45,7 +49,7 @@
 - 当前变更相关的项目事实、交接、验证说明；
 - 已生成的状态文件和审计报告。
 
-所以 `ai-context-kit` 的默认能力集中在 `doctor`、`agents/repair`、`codex-mem route`、`contracts --query`、`token-status`、`audit` 和 `editor-tasks`。它们的作用是给下一步阅读排序，不替代源码和验证。
+所以当前 `ai-context-kit` 的默认能力集中在 `inspect`、`doctor`、`agents/repair`、`codex-mem route`、`contracts --query`、`token-status`、`real-task-audit` 和 `editor-tasks`。它们的作用是给下一步阅读排序，不替代源码和验证。
 
 ### 2. 质量证据和 token 证据分开
 
@@ -81,25 +85,25 @@
 | 状态源 | 生成命令 | 读取者 |
 | --- | --- | --- |
 | `docs/ai-context-token-status.json` | `ai-context-kit token-status --json --output docs/ai-context-token-status.json` | IDE 面板、团队脚本、编辑器任务 |
-| `docs/ai-context-audit-state.json` | `ai-context-kit audit --output docs/ai-context-audit-report.md` | Stop hook、CI、编辑器任务、其他 Agent |
-| `docs/ai-context-workspace-status.json` | `ai-context-kit status --json --output docs/ai-context-workspace-status.json` | 需要同时读取 token、偏差和质量证据状态的 IDE 面板、CI、团队脚本 |
-| `docs/ai-context-workspace-status.schema.json` | `ai-context-kit status --json --output docs/ai-context-workspace-status.json` 同步写入 | 校验 status JSON 的关键字段、状态枚举和 claims 结构 |
+| `docs/ai-context-audit-state.json` | 目标设计：`ai-context-kit audit`，当前未实现 | Stop hook、CI、编辑器任务、其他 Agent |
+| `docs/ai-context-workspace-status.json` | 目标设计：`ai-context-kit status`，当前未实现 | 需要同时读取 token、偏差和质量证据状态的 IDE 面板、CI、团队脚本 |
+| `docs/ai-context-workspace-status.schema.json` | 目标设计：由 `status` 同步写入，当前未实现 | 校验 status JSON 的关键字段、状态枚举和 claims 结构 |
 
 `ai-context-audit-state.json` 包含 `status`、`alertCodes`、drift/conflict/mismatch 计数和简短列表。`ai-context-workspace-status.json` 汇总 token status、audit state 和真实任务审计，只读取已有报告，不重新扫描源码，并在 `claims` 中把静态上下文节省、真实任务节省和“质量未下降的 token 节省”分开标记。schema 只约束关键字段和枚举，允许以后追加字段。这样不同模型看到的是同一份机器可读状态，不需要复述上一个模型的解释。
 
 ### 5. 默认 observe guard，不默认 compress
 
-`codex-mem install-hooks --mode observe` 记录本地 token 估算、提示高噪声读取和 Stop snapshot，并对少量明确高风险读取返回 block：未读交接就读取源码、敏感路径、整段契约索引、本地索引直读、父目录宽搜索。普通状态命令如 `token-status` 不会因为包含 `token` 这个词被拦截。`compress` 可以把长输出写入 ref 并返回摘要，但它会改变 Agent 当轮看到的信息形态。
+`codex-mem install-hooks --mode observe` 记录本地 token 估算、提示高噪声读取和 Stop snapshot，不阻止工具调用。`compress` 可以把长输出写入 ref、返回摘要并阻止原始大输出继续进入上下文，但它会改变 Agent 当轮看到的信息形态。
 
 当前没有足够真实任务 A/B 证明 compress 不影响质量，所以团队默认只使用 observe guard。compress 继续保留为实验能力，只有真实任务记录证明质量没有下降时，才考虑给团队默认使用。
 
-### 6. npm CLI 是团队接入主入口
+### 6. npm CLI 安装器是目标设计
 
-让同事不 clone 工具仓库也能接入，主入口应是 npm CLI，而不是要求每个人理解模板目录结构。`ai-context-kit install` 负责把项目事实模板、helper 脚本、CI 示例和 repo-scoped Skill 复制到目标项目；`quickstart --install-template` 可以把安装和首次状态生成放在同一次执行里。
+目标方案是让同事不 clone 工具仓库也能接入，由 npm CLI 安装项目事实模板、可选 helper、CI 示例和 repo-scoped Skill。但 `ai-context-kit install` 与 `quickstart --install-template` 在 `0.3.60` 尚未实现，当前使用源码仓库中的 `scripts/install-project-facts.sh` 和现有 `onboard` 命令。
 
-`0.3.59` 的 npm 包在 `prepack` 时把 `template/`、`skills/`、辅助脚本、关键制度文档、status schema、状态样例和任务阅读清单复制到 `vendor/project-facts-kit/`。CLI 运行时优先使用 `PROJECT_FACTS_KIT`，其次使用 npm 包内 vendor 资产，最后才使用源码仓库根目录。
+计划中的 npm 包可在 `prepack` 时携带模板、Skill、辅助脚本、关键制度文档、schema 样例和任务阅读清单。该分发方案需要独立发布验证，不能从当前源码结构推断已经可用。
 
-安装仍保持保守边界：默认 `lite`，已有文件跳过；`--with-skill` 才复制 `.agents/skills`；`--with-ci` 才复制 GitHub Actions workflow；`--inject-package-scripts` 才给 Node 项目增加 `facts:*` 命令。这样避免工具接入无意改变目标项目的开发命令、CI 行为和团队习惯。
+目标安装器应保持保守边界：默认 profile 较小，Skill、CI 和 package scripts 均需显式启用，已有文件跳过。当前 shell installer 已做到 helper 仅在 `--with-helper-scripts` 时复制，其他 npm 安装选项仍未实现。
 
 ### 7. Skill 和 Codex Plugin 是工作流分发，不是项目文件安装器
 
@@ -112,7 +116,7 @@
 | `skills/project-facts-maintainer` | 维护项目事实、规格、交接和验证证据 |
 | `skills/low-token-context-maintainer` | 约束多仓库低 token 阅读路径、契约查询和后端单接口窄范围读取 |
 | `plugins/project-facts-kit` | 把两个 Skill 打包成 Codex Plugin，供团队通过 repo/team marketplace 安装 |
-| npm CLI | 安装模板、生成 audit/status/token 文件、注入 CI 和 `facts:*` 命令 |
+| npm CLI | 当前提供 inspect、上下文生成、契约查询和 token 工具；模板安装、CI 注入与 audit/status 仍是目标设计 |
 
 当前 Codex Plugin 不打包 hooks 或 MCP server，原因是插件内 hook 仍需要用户 trust；而本项目的 observe hook 依赖目标 workspace 的 `.codex/` 与 `.codex-mem/` 运行数据，更适合由 CLI 在目标项目中显式安装。
 
@@ -120,16 +124,16 @@
 
 推荐把一个任务的入口固定为下列顺序：
 
-1. 读取根 `AGENTS.md`、`project-facts/project.md`、`context-boundary.md`、`verification.md`。
+1. 写入范围未知时运行 `ai-context-kit inspect --workspace <path>`，再读取根 `AGENTS.md`、`project-facts/project.md`、`context-boundary.md`、`verification.md`。
 2. 父目录或多仓库项目运行 `ai-context-kit doctor --workspace <path>`，确认 workflow 资料是否缺失或 stale。
 3. 任务涉及仓库选择时，使用 `codex-mem route --query "<task>"`。
 4. 任务涉及页面、接口、字段、状态链路时，使用 `contracts --query <endpoint-or-symbol>`，必要时加 `--frontend-repo`、`--backend-repo` 或 `--related`。
 5. 只读取命中链路上的源码、DTO、mapper、验证配置和项目事实。
-6. 报告前运行 `ai-context-kit audit --workspace <path> --output docs/ai-context-audit-report.md`。
-7. 需要 CI 拦截 warning 时运行 `ai-context-kit audit --workspace <path> --output docs/ai-context-audit-report.md --fail-on-warning`。
+6. 报告前运行 `doctor`；有真实任务 A/B 记录时运行 `real-task-audit`。
+7. 当前 CI 模板只生成 `inspect`、`doctor` 和 `token-status` 报告，不提供 warning gate。
 8. 记录验证结果。没有执行的检查写 `Not run`，不能写成通过。
 
-编辑器侧使用 `ai-context-kit editor-tasks --workspace <path>` 生成任务。VS Code 兼容编辑器可以直接运行 token status、写 JSON、facts audit、刷新 dashboard、查看 session usage 和安装 observe hooks。其他 IDE 读取同样命令即可。
+编辑器侧使用 `ai-context-kit editor-tasks --workspace <path>` 生成任务。VS Code 兼容编辑器可以直接运行 onboard、upgrade、token status、写 JSON、刷新 dashboard、查看 session usage 和安装 observe hooks。其他 IDE 可配置同样的现有命令。
 
 ## 偏差预警流程
 
@@ -141,9 +145,9 @@
 | 字段契约未确认 | 前端 payload 与后端 DTO 必填字段或额外字段不一致 | `CONTRACT_DRIFT_WARNING` | 读取页面/API wrapper/DTO/mapper，写入当前变更 `unknowns.md` |
 | 冲突观测 | observation、项目事实或交接中出现 conflict/drift 描述 | `CONFLICT_ALERT` | 暂停相关业务行为修改，列出冲突来源，交给责任人确认 |
 
-Stop hook 会优先读取 `docs/ai-context-audit-state.json`。如果状态文件晚于源资料，就直接返回其中的 warning；如果源资料更新而状态文件过旧，hook 会做轻量扫描并提示需要重新审计。
+让 Stop hook 读取 `docs/ai-context-audit-state.json` 属于目标设计；当前版本没有生成该状态文件的 `audit` 命令。
 
-CI 使用 `--fail-on-warning`，可以让 warning 变成非零退出码，同时保留 Markdown 和 JSON 报告供审阅。
+CI warning gate 需要后续实现独立的退出码契约。当前版本没有 `--fail-on-warning`。
 
 ## 暂不作为默认能力
 
@@ -160,22 +164,21 @@ CI 使用 `--fail-on-warning`，可以让 warning 变成非零退出码，同时
 1. 把可公开的三类真实任务记录整理进本仓库：后端 bug、小程序联调、跨端字段问题。
 2. 用 `real-task-audit` 作为质量证据入口，不再从单个成功日志推导总体结论。
 3. 在真实后端单接口样本中继续降低源码阅读范围，重点观察是否仍读取本地索引、宽 DTO 搜索或过深后续链路。
-4. 让团队 CI 采用 `audit --fail-on-warning`，把契约偏差和冲突观测从个人提示变成共享失败信号。
+4. 评审并实现 CI warning gate 的状态 schema、退出码和兼容策略后，再考虑团队默认启用。
 5. 如果后续真实任务证明 compress 不影响质量，再设计团队默认配置；当前保持实验状态。
 
 ## 本轮新增取舍
 
 - 审计报告继续服务人阅读，`docs/ai-context-audit-state.json` 服务机器读取。
-- `audit --fail-on-warning` 把 warning 状态变为 CI 可识别的失败，同时保留报告产物。
-- `status --json --output docs/ai-context-workspace-status.json` 汇总 token、偏差和真实任务质量证据，服务编辑器、CI 和团队脚本。
-- `status` JSON 增加 `schemaVersion` 和 `schema`；使用 `--output` 时同步写入 `docs/ai-context-workspace-status.schema.json`。
-- `status` 的 `claims` 字段区分三类结论：静态节省可测、真实任务节省待证、质量未下降的节省是否可声明。
+- `[未实现]` `audit --fail-on-warning` 计划把 warning 状态变为 CI 可识别的失败，同时保留报告产物。
+- `[未实现]` `status --json` 计划汇总 token、偏差和真实任务质量证据，服务编辑器、CI 和团队脚本。
+- `[未实现]` `status` JSON 计划增加 `schemaVersion`、schema 和分类 claims。
 - `editor-tasks` 增加严格事实审计任务，让编辑器里也能直接看到 warning 失败。
 - observe guard 的敏感识别只匹配 `.env`、`*.pem`、`access_token`、`api_key` 等敏感形态，不把普通 `token-status` 或文档里的 `token` 词当成敏感读取。
 - `README.md` 增加本说明入口，避免设计原因散在聊天记录里。
 - `check-kit.sh` 在本机存在 `skills-ref` 时校验两个 Agent Skill；没有该工具时显式输出跳过信息。
-- `ai-context-kit install` 成为 npm 分发后的项目接入入口，支持 `--lite|--full`、`--with-skill`、`--with-ci` 和 `--inject-package-scripts`。
-- `quickstart --install-template` 支持把模板安装和首次状态生成放在一次执行中。
-- npm 包发布时把模板、Skill、辅助脚本、CI 示例、schema 样例和任务阅读清单打入 `vendor/project-facts-kit/`。
+- `[未实现]` `ai-context-kit install` 作为 npm 分发后的项目接入入口，支持按需模板、Skill 和 CI 选项。
+- `[未实现]` `quickstart --install-template` 把模板安装和首次状态生成放在一次执行中。
+- `[未实现]` npm 包发布时携带模板、Skill、辅助脚本、CI 示例、schema 样例和任务阅读清单。
 - 新增 `plugins/project-facts-kit/` 和 `.agents/plugins/marketplace.json`，用于 Codex repo/team marketplace 分发两个 Skill。
-- 版本记录推进到 `ai-context-kit 0.3.59`。
+- 本设计稿当时以 `0.3.59` 为目标版本；实际命令状态以当前 package version 和 `--help` 为准。

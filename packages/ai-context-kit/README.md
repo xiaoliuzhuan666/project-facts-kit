@@ -47,7 +47,22 @@ project prompts.
 For the full update command list, see
 `docs/project-facts-kit-update-commands.zh-CN.md` in the repository root.
 
+For normal project use, keep the entry commands short:
+
 ```bash
+# Not adopted yet
+~/.cache/project-facts-kit/scripts/install-project-facts.sh . --lite && ai-context-kit onboard -w .
+
+# Already adopted
+ai-context-kit upgrade -w .
+```
+
+The first command installs the lite facts template before context onboarding.
+Longer installer commands are only needed when a maintainer intentionally
+vendors project-local Skills or helper scripts into the repository.
+
+```bash
+ai-context-kit inspect --workspace /path/to/workspace
 ai-context-kit doctor --workspace /path/to/workspace
 ai-context-kit onboard --workspace /path/to/workspace
 ai-context-kit upgrade --workspace /path/to/workspace
@@ -87,12 +102,14 @@ ai-context-kit codex-mem sessions --workspace /path/to/workspace --session 019e-
 ai-context-kit codex-mem exec-events --workspace /path/to/workspace --events /tmp/codex-events.jsonl
 ```
 
-Run `onboard` for first intake when writing generated workflow files is
+Run `inspect` first when existing context standards or the acceptable write
+scope are unknown. It reports detected repositories and standards with zero
+writes and skips implementation-source scanning. Run `onboard` for first intake when writing generated workflow files is
 acceptable. It generates missing workflow artifacts only, then prints `doctor`
 and `token-status` so an agent or editor task can show one status summary. Run
 `upgrade` when an already-adopted workspace should refresh generated maps,
 reports and indexes from the current repository state, then print the same
-status summary. Run `doctor` first when you only want a read-only check. Use
+status summary. Use `doctor` for the detailed read-only health check. Use
 `agents` or `repair` when the current project has gaps: they generate the
 missing workflow artifacts only, such as AGENTS, ai-context docs, project-facts
 skeletons, the scope report or the local `.codex-mem/index.jsonl` used by
@@ -110,7 +127,7 @@ current `Frontend payload fields` or `Field check` columns; refresh those with
 warning when they read stale generated artifacts, so direct queries do not look
 like fresh contract data.
 
-By default, existing `AGENTS.md` and `project-facts/` files are not overwritten. Use `--force` only when you intentionally want to regenerate files that already contain the `generated-by: ai-context-kit` marker. Non-generated project facts are skipped even with `--force`.
+By default, existing `AGENTS.md` and `project-facts/` files are not overwritten. Default report paths also require an ai-context-kit ownership marker for Markdown, JSON, JSONL, hook scripts, and `.gitignore`. For upgrade compatibility, an unmarked legacy Markdown file is refreshed only when its fixed filename and strict historical signature both match. Other unmarked files are skipped even with `--force`. An explicit `--output` is treated as the caller's choice of target path.
 
 CodeGraph is intentionally not initialized for every child repository at once.
 Use `--repos <name>` to select a single repository.
@@ -250,6 +267,7 @@ output before sharing.
 ## Recommended team flow
 
 ```bash
+ai-context-kit inspect --workspace /path/to/parent
 ai-context-kit doctor --workspace /path/to/parent
 ai-context-kit onboard --workspace /path/to/parent
 ai-context-kit agents --workspace /path/to/parent
@@ -270,6 +288,7 @@ When installed from the root `project-facts-kit` package, the same commands are
 available through:
 
 ```bash
+project-facts-kit context inspect --workspace /path/to/parent
 project-facts-kit context doctor --workspace /path/to/parent
 project-facts-kit context onboard --workspace /path/to/parent
 project-facts-kit context upgrade --workspace /path/to/parent
@@ -282,8 +301,9 @@ project-facts-kit context token-status --workspace /path/to/parent
 project-facts-kit context editor-tasks --workspace /path/to/parent
 ```
 
-Start with `onboard` before searching broadly from a parent folder when writing
-generated workflow files is acceptable. Use `doctor` for a read-only check. Read
+Start with `inspect` when the workspace standards or write boundary are unknown.
+Use `onboard` before searching broadly from a parent folder only when writing
+generated workflow files is acceptable. Use `doctor` for the detailed read-only check. Read
 both `workflow artifacts` and `capability status`. Use `agents` or `repair` for
 missing workflow artifacts, and use `upgrade` or `init` for stale generated maps
 or an intentional regeneration pass. Treat CodeGraph and token reports as opt-in
@@ -337,7 +357,8 @@ Repomix outputs under `/tmp`. Generated Markdown should not contain local
 absolute workspace paths; review repository remotes and any copied report before
 committing.
 
-The `tokens` command requires `npx` and runs `repomix@latest`; `ai-context-kit`
+The `tokens` command requires `npx` and runs the pinned `repomix@1.16.1` with
+its default security scan enabled; `ai-context-kit`
 also checks common nvm locations when GUI app shells do not include `npx` on
 `PATH`. `summary` prints a short savings summary from the latest token report.
 `dashboard` writes `docs/ai-context-token-dashboard.md` from the latest token
@@ -372,9 +393,9 @@ The generated guidance tells Codex not to read common sensitive or high-volume p
 
 ## External tool check
 
-Checked on 2026-06-06:
+Checked on 2026-07-15:
 
-- `repomix@latest` is used only by the `tokens` command through `npx`; `/usr/local/bin/npm view repomix` reported latest `1.14.1`, and `npx repomix@latest --help` confirmed `--stdin`, `--token-count-encoding`, `--top-files-len`, `--style` and `--no-security-check`.
+- `repomix@1.16.1` is used only by the `tokens` command through `npx`. The CLI keeps Repomix's default Secretlint security scan enabled and does not pass `--no-security-check`.
 - CodeGraph is optional. `/usr/local/bin/npm view @colbymchenry/codegraph` reported latest `0.9.9`, and `npx @colbymchenry/codegraph@0.9.9 --help` confirmed `init`, `status`, `query` and related commands.
 
 Install CodeGraph separately only when a target repository needs symbol queries:

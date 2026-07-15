@@ -4,10 +4,14 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
-const VERSION = "0.3.55";
+const PACKAGE_JSON = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+const VERSION = PACKAGE_JSON.version;
 const MANAGED_MARKER = "<!-- generated-by: ai-context-kit -->";
+const MANAGED_LINE_MARKER = "# generated-by: ai-context-kit";
+const MANAGED_SCRIPT_MARKER = "// generated-by: ai-context-kit";
 const CODEX_MEM_GENERATOR = "ai-context-kit codex-mem";
 const CODEX_MEM_DIR = ".codex-mem";
+const REPOMIX_PACKAGE = "repomix@1.16.1";
 
 const EXCLUDED_DIRS = new Set([
   ".git",
@@ -126,6 +130,11 @@ function main() {
 
   if (!fs.existsSync(workspace)) {
     fail(`Workspace does not exist: ${workspace}`);
+  }
+
+  if (command === "inspect") {
+    printInspect(buildInspectContext(workspace), opts);
+    return;
   }
 
   const context = buildContext(workspace);
@@ -281,6 +290,7 @@ function printHelp() {
   console.log(`${cliLabel()} ${VERSION}
 
 Usage:
+  ai-context-kit inspect --workspace <path> [--json]
   ai-context-kit onboard --workspace <path>
   ai-context-kit upgrade --workspace <path> [--with-codegraph] [--force]
   ai-context-kit doctor  --workspace <path>
@@ -311,7 +321,7 @@ Options:
   --repos <a,b>            Limit to selected child repository directory names.
   --dry-run                Print actions without writing files.
   --force                  Regenerate ai-context-kit managed files. Non-generated project facts are skipped.
-  --json                   Print JSON for commands that support it, such as token-status.
+  --json                   Print JSON for commands that support it, such as inspect and token-status.
   --with-codegraph         Run CodeGraph init for selected repos during init.
   --codegraph-timeout <s>  Timeout for each CodeGraph init. Defaults to 180 seconds.
   --token-encoding <name>  Repomix token encoding for tokens command. Defaults to o200k_base.
@@ -423,16 +433,50 @@ function buildContext(workspace) {
 }
 
 function discoverRepos(workspace) {
+  return discoverRepoRoots(workspace)
+    .map((repoPath) => buildRepoInfo(repoPath, workspace))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function discoverRepoRoots(workspace) {
   const directGit = path.join(workspace, ".git");
-  if (fs.existsSync(directGit)) return [buildRepoInfo(workspace, workspace)];
+  if (fs.existsSync(directGit)) return [workspace];
 
   const entries = fs.readdirSync(workspace, { withFileTypes: true });
   return entries
     .filter((entry) => entry.isDirectory())
     .map((entry) => path.join(workspace, entry.name))
-    .filter((dir) => fs.existsSync(path.join(dir, ".git")))
-    .map((dir) => buildRepoInfo(dir, workspace))
+    .filter((dir) => fs.existsSync(path.join(dir, ".git")));
+}
+
+function buildInspectContext(workspace) {
+  const repos = discoverRepoRoots(workspace)
+    .map((repoPath) => buildInspectRepoInfo(repoPath, workspace))
     .sort((a, b) => a.name.localeCompare(b.name));
+  return { workspace, repos, codegraph: "" };
+}
+
+function buildInspectRepoInfo(repoPath, workspace) {
+  const packageJson = readJson(path.join(repoPath, "package.json"));
+  const dependencies = {
+    ...(packageJson?.dependencies || {}),
+    ...(packageJson?.devDependencies || {})
+  };
+  const tech = [];
+  if (fs.existsSync(path.join(repoPath, "pom.xml"))) tech.push("maven", "java");
+  if (fs.existsSync(path.join(repoPath, "go.mod"))) tech.push("go");
+  if (fs.existsSync(path.join(repoPath, "pages.json")) || fs.existsSync(path.join(repoPath, "manifest.json"))) tech.push("uni-app");
+  if (dependencies.vue || fs.existsSync(path.join(repoPath, "vue.config.js"))) tech.push("vue");
+  if (dependencies.react || dependencies.next) tech.push("react");
+  if (packageJson) tech.push("node");
+  return {
+    name: path.basename(repoPath),
+    path: repoPath,
+    rel: path.relative(workspace, repoPath) || ".",
+    tech: unique(tech),
+    branch: git(repoPath, ["branch", "--show-current"]) || "unknown",
+    stats: { files: null }
+  };
 }
 
 function buildRepoInfo(repoPath, workspace) {
@@ -609,7 +653,7 @@ function runUpgrade(context, opts) {
 
 workspace: ${context.workspace}
 `);
-  runInitWorkflow(context, opts);
+  runInitWorkflow(context, { ...opts, force: true });
   const refreshedContext = opts.dryRun ? context : buildContext(context.workspace);
   console.log("");
   printDoctor(refreshedContext);
@@ -1570,7 +1614,7 @@ ${table}
 
 function writeContextGraph(context, opts) {
   const outPath = opts.output ? path.resolve(opts.output) : path.join(context.workspace, "docs", "ai-context-graph.json");
-  writeFile(outPath, JSON.stringify(buildContextGraph(context), null, 2) + "\n", opts);
+  writeCommandOutput(outPath, JSON.stringify(buildContextGraph(context), null, 2) + "\n", opts);
 }
 
 function buildContextGraph(context) {
@@ -2761,7 +2805,7 @@ function initCodexMem(context, opts) {
   const dir = path.join(context.workspace, CODEX_MEM_DIR);
   ensureDir(dir, opts);
   ensureDir(path.join(dir, "refs"), opts);
-  writeGeneratedFile(path.join(dir, ".gitignore"), "*\n!.gitignore\n", opts);
+  writeGeneratedFile(path.join(dir, ".gitignore"), `${MANAGED_LINE_MARKER}\n*\n!.gitignore\n`, opts);
   writeGeneratedFile(path.join(dir, "README.md"), renderCodexMemReadme(), opts);
 }
 
@@ -2783,7 +2827,10 @@ function writeCodexMemIndex(context, opts) {
   const dir = path.join(context.workspace, CODEX_MEM_DIR);
   const outPath = path.join(dir, "index.jsonl");
   const workspacePath = path.join(dir, "workspace.json");
-  writeGeneratedFile(outPath, entries.map((entry) => JSON.stringify(entry)).join("\n") + "\n", opts);
+  writeGeneratedFile(outPath, entries.map((entry) => JSON.stringify({
+    ...entry,
+    generatedBy: CODEX_MEM_GENERATOR
+  })).join("\n") + "\n", opts);
   writeGeneratedFile(workspacePath, JSON.stringify({
     generatedBy: CODEX_MEM_GENERATOR,
     generatedAt: new Date().toISOString(),
@@ -3874,7 +3921,7 @@ function installCodexMemHooks(context, opts) {
   const hooksDir = path.join(codexDir, "hooks");
   ensureDir(hooksDir, opts);
   writeGeneratedJson(path.join(codexDir, "hooks.json"), renderCodexMemHooksJson(mode, opts), opts);
-  writeFile(path.join(hooksDir, "codex-mem-hook.mjs"), renderCodexMemHookScript({ mode, threshold: opts.threshold }), opts);
+  writeGeneratedFile(path.join(hooksDir, "codex-mem-hook.mjs"), renderCodexMemHookScript({ mode, threshold: opts.threshold }), opts);
 }
 
 function installUserCodexMemHooks(context, opts) {
@@ -3921,19 +3968,13 @@ function renderCodexMemHooksJson(mode, opts, extra) {
 }
 
 function writeGeneratedJson(target, value, opts) {
-  if (fs.existsSync(target)) {
-    const current = safeRead(target);
-    if (!opts.force && !current.includes(CODEX_MEM_GENERATOR)) {
-      log(`skip existing non-codex-mem file ${target}`);
-      return;
-    }
-  }
-  writeFile(target, JSON.stringify(value, null, 2) + "\n", opts);
+  writeGeneratedFile(target, JSON.stringify(value, null, 2) + "\n", opts);
 }
 
 function renderCodexMemHookScript({ mode, threshold }) {
   const defaultThreshold = Number.isFinite(threshold) && threshold > 0 ? threshold : 8000;
   return `#!/usr/bin/env node
+${MANAGED_SCRIPT_MARKER}
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -4491,7 +4532,7 @@ function writeCodexMemDashboard(context, opts) {
   const rawEvents = readJsonl(ledgerPath);
   const events = dedupeLedgerEvents(rawEvents);
   const outPath = path.resolve(opts.output || path.join(context.workspace, "docs", "codex-mem-dashboard.md"));
-  writeFile(outPath, renderCodexMemDashboard({ context, events, ledgerPath, rawEventCount: rawEvents.length }), opts);
+  writeCommandOutput(outPath, renderCodexMemDashboard({ context, events, ledgerPath, rawEventCount: rawEvents.length }), opts);
 }
 
 function readJsonl(file) {
@@ -4621,7 +4662,7 @@ function writeCodexSessionUsageReport(context, opts) {
   const allSessions = collectCodexSessions({ sessionsDir, workspace: context.workspace, days });
   const requestedSessionIds = normalizeSessionIds(opts.sessionIds);
   const { sessions, missingSessionIds } = filterSessionsByIds(allSessions, requestedSessionIds);
-  writeFile(outPath, renderCodexSessionUsageReport({
+  writeCommandOutput(outPath, renderCodexSessionUsageReport({
     context,
     codexHome,
     sessions,
@@ -4922,7 +4963,7 @@ function writeCodexExecEventsReport(context, opts) {
   if (!eventFiles.length) fail("codex-mem exec-events requires --events <events.jsonl> or --input <events.jsonl>");
   const summaries = eventFiles.map((file) => readCodexExecEventsSummary(file));
   const outPath = path.resolve(opts.output || path.join(context.workspace, "docs", "codex-exec-events.md"));
-  writeFile(outPath, renderCodexExecEventsReport({ context, eventFiles, summaries }), opts);
+  writeCommandOutput(outPath, renderCodexExecEventsReport({ context, eventFiles, summaries }), opts);
 }
 
 function normalizeExecEventFiles(opts) {
@@ -5168,7 +5209,7 @@ function writeRealTaskAuditReport(context, opts) {
   const items = files.map((file) => readRealTaskAuditItem(context, file));
   const records = items.filter((item) => item.hasConclusion);
   const supporting = items.filter((item) => !item.hasConclusion);
-  writeFile(outPath, renderRealTaskAuditReport({ context, dir, files, records, supporting }), opts);
+  writeCommandOutput(outPath, renderRealTaskAuditReport({ context, dir, files, records, supporting }), opts);
 }
 
 function listRealTaskMarkdownFiles(dir) {
@@ -5523,7 +5564,7 @@ function writeTokenSavingsReport(context, opts) {
     repoRows.push({ repo, baseline, lean, index });
   }
 
-  writeFile(outPath, renderTokenSavingsReport({ context, parent, routing, repoRows, encoding, topFilesLen }), opts);
+  writeCommandOutput(outPath, renderTokenSavingsReport({ context, parent, routing, repoRows, encoding, topFilesLen }), opts);
 }
 
 function runRepomixMeasure({ name, cwd, files, output, encoding, topFilesLen, npxCommand }) {
@@ -5534,7 +5575,7 @@ function runRepomixMeasure({ name, cwd, files, output, encoding, topFilesLen, np
   log(`measure ${name}: ${uniqueFiles.length} files`);
   const args = [
     "--yes",
-    "repomix@latest",
+    REPOMIX_PACKAGE,
     "--stdin",
     "--output",
     output,
@@ -5543,8 +5584,7 @@ function runRepomixMeasure({ name, cwd, files, output, encoding, topFilesLen, np
     "--token-count-encoding",
     encoding,
     "--top-files-len",
-    String(topFilesLen),
-    "--no-security-check"
+    String(topFilesLen)
   ];
   const result = spawnSync(npxCommand, args, {
     cwd,
@@ -5606,7 +5646,7 @@ function renderTokenSavingsReport({ context, parent, routing, repoRows, encoding
 
 ## 判断
 
-本报告用于对比“不使用上下文治理”和“使用父目录路由、轻量事实、完整索引”时的 token 规模。测量工具为 \`repomix@latest\`，tokenizer 为 \`${encoding}\`。
+本报告用于对比“不使用上下文治理”和“使用父目录路由、轻量事实、完整索引”时的 token 规模。测量工具为 \`${REPOMIX_PACKAGE}\`，并保留 Repomix 默认安全扫描；tokenizer 为 \`${encoding}\`。
 
 这些数字是可复现的上下文规模测量，不等同于某一次 Codex app 账单。实际账单还会受到对话长度、工具输出、缓存命中、模型和验证过程影响。
 
@@ -5679,7 +5719,7 @@ function writeSavingsDashboard(context, opts) {
   const reportPath = tokenReportPath(context, opts);
   const report = parseTokenSavingsReport(reportPath);
   const outPath = path.resolve(opts.output || path.join(context.workspace, "docs", "ai-context-token-dashboard.md"));
-  writeFile(outPath, renderSavingsDashboard(report), opts);
+  writeCommandOutput(outPath, renderSavingsDashboard(report), opts);
 }
 
 function printTokenStatus(context, opts) {
@@ -6447,6 +6487,106 @@ repos: ${context.repos.length}
   }
 }
 
+function printInspect(context, opts) {
+  if (opts.output) {
+    fail("inspect is read-only and only writes to stdout; use shell redirection if you want to save its output");
+  }
+  const data = buildInspectData(context);
+  if (opts.json) {
+    process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
+    return;
+  }
+  const standards = data.existingStandards.length
+    ? data.existingStandards.map((item) => `- ${item.scope}: ${item.kind} (${item.path})`).join("\n")
+    : "- none detected";
+  const repositories = data.repositories.length
+    ? data.repositories.map((repo) => {
+      const repoStandards = repo.standards.length
+        ? repo.standards.map((item) => `${item.kind}:${item.path}`).join(", ")
+        : "none";
+      return `- ${repo.name}\n  path: ${repo.path}\n  tech: ${repo.tech.join(", ") || "unknown"}\n  files: ${repo.files ?? "not scanned"}\n  standards: ${repoStandards}`;
+    }).join("\n")
+    : "- none detected";
+  console.log(`# ai-context-kit inspect
+
+mode: read-only
+writes: 0
+source scan: skipped
+workspace: .
+repos: ${data.repositories.length}
+
+existing standards:
+${standards}
+
+repositories:
+${repositories}
+
+workflow artifacts:
+- existing: ${data.workflowArtifacts.existing}
+- missing: ${data.workflowArtifacts.missing}
+- stale: ${data.workflowArtifacts.stale}
+
+No files were changed. Review existing standards before running a command that creates or refreshes project files.`);
+}
+
+function buildInspectData(context) {
+  const artifacts = workflowArtifacts(context);
+  const workspaceStandards = detectContextStandards(context.workspace, context.workspace, "workspace");
+  const repositories = context.repos.map((repo) => ({
+    name: repo.name,
+    path: repo.rel,
+    branch: repo.branch,
+    tech: repo.tech,
+    files: repo.stats.files,
+    standards: detectContextStandards(repo.path, context.workspace, repo.rel === "." ? "repository" : `repository:${repo.name}`)
+      .map(({ scope: _scope, ...item }) => item)
+  }));
+  const repositoryStandards = context.repos
+    .filter((repo) => repo.path !== context.workspace)
+    .flatMap((repo) => detectContextStandards(repo.path, context.workspace, `repository:${repo.name}`));
+  return {
+    schemaVersion: 1,
+    generatedBy: `ai-context-kit ${VERSION}`,
+    mode: "read-only",
+    writes: 0,
+    sourceScan: "skipped",
+    implementationFilesRead: 0,
+    workspace: ".",
+    existingStandards: [...workspaceStandards, ...repositoryStandards],
+    repositories,
+    workflowArtifacts: {
+      total: artifacts.length,
+      existing: artifacts.filter((item) => item.exists).length,
+      missing: artifacts.filter((item) => !item.exists).length,
+      stale: artifacts.filter((item) => item.exists && item.issue).length
+    }
+  };
+}
+
+function detectContextStandards(root, workspace, scope) {
+  const definitions = [
+    ["agents-md", ["AGENTS.md"]],
+    ["project-facts", ["project-facts"]],
+    ["openspec", ["openspec"]],
+    ["spec-kit", [".specify"]],
+    ["madr", ["docs/decisions", "docs/adr", "adr"]],
+    ["backstage", ["catalog-info.yaml", "catalog-info.yml"]],
+    ["continue-rules", [".continue/rules"]],
+    ["codeowners", ["CODEOWNERS", ".github/CODEOWNERS", "docs/CODEOWNERS"]]
+  ];
+  const found = [];
+  for (const [kind, candidates] of definitions) {
+    const candidate = candidates.find((rel) => fs.existsSync(path.join(root, rel)));
+    if (!candidate) continue;
+    found.push({
+      scope,
+      kind,
+      path: slash(path.relative(workspace, path.join(root, candidate)) || ".")
+    });
+  }
+  return found;
+}
+
 function printCapabilityActions(context) {
   const capabilities = buildCapabilityStatus(context);
   const get = (name) => capabilities.find((item) => item.name === name) || {
@@ -6788,7 +6928,7 @@ function writeManagedFile(target, content, opts) {
       return;
     }
     const current = safeRead(target);
-    if (!current.includes(MANAGED_MARKER)) {
+    if (!current.includes(MANAGED_MARKER) && !isLegacyManagedMarkdown(target, current)) {
       log(`skip existing non-ai-context-kit file ${target}`);
       return;
     }
@@ -6801,7 +6941,70 @@ function writeGeneratedFile(target, content, opts) {
     log(`skip existing ${target}`);
     return;
   }
+  if (path.extname(target).toLowerCase() === ".md") {
+    writeManagedFile(target, content, { ...opts, force: true });
+    return;
+  }
+  if (fs.existsSync(target) && !isOwnedGeneratedFile(target)) {
+    log(`skip existing non-ai-context-kit file ${target}`);
+    return;
+  }
   writeFile(target, content, opts);
+}
+
+function isOwnedGeneratedFile(target) {
+  const current = readFilePrefix(target, 64 * 1024);
+  if (!current) return false;
+  if (path.basename(target) === ".gitignore") {
+    return current.includes(MANAGED_LINE_MARKER) || current === "*\n!.gitignore\n";
+  }
+  if (path.extname(target).toLowerCase() === ".json") {
+    const match = current.match(/^\s*\{\s*"(?:generatedBy|_generatedBy)"\s*:\s*"([^"]+)"/);
+    return Boolean(match?.[1].startsWith("ai-context-kit"));
+  }
+  if (path.basename(target) === "index.jsonl") {
+    const firstLine = current.split(/\r?\n/).find(Boolean);
+    if (!firstLine) return false;
+    try {
+      const entry = JSON.parse(firstLine);
+      return entry.generatedBy === CODEX_MEM_GENERATOR
+        || (entry.id === "workspace" && entry.type === "workspace" && Boolean(entry.generatedAt));
+    } catch {
+      return false;
+    }
+  }
+  if (path.extname(target).toLowerCase() === ".mjs") {
+    return current.includes(MANAGED_SCRIPT_MARKER)
+      || (path.basename(target) === "codex-mem-hook.mjs"
+        && current.includes("codex-mem observe mode is active")
+        && current.includes("function buildResponse"));
+  }
+  return false;
+}
+
+function isLegacyManagedMarkdown(target, current) {
+  const signatures = {
+    "ai-context-workspace-map.md": ["# AI 工作区地图", "生成时间："],
+    "ai-context-api-contract-map.md": ["# 跨端 API 契约索引", "由 ai-context-kit 静态扫描生成"],
+    "ai-context-scope-report.md": ["# AI 上下文范围报告", "生成时间："],
+    "ai-context-token-savings-measurement.md": ["# AI 上下文 token 测量报告", "生成时间："],
+    "ai-context-token-dashboard.md": ["# AI 上下文节省看板", "生成时间："],
+    "ai-context-kit-real-task-ab-audit.md": ["# ai-context-kit 真实任务 A/B 审计", "生成时间："],
+    "codex-mem-dashboard.md": ["# codex-mem observe 看板", "生成时间："],
+    "codex-session-usage.md": ["# Codex session token 统计", "生成时间："],
+    "codex-exec-events.md": ["# Codex exec events 摘要", "生成时间："],
+    "README.md": ["# codex-mem local data", "This directory is generated by ai-context-kit."]
+  };
+  const required = signatures[path.basename(target)];
+  return Boolean(required?.every((item) => current.includes(item)));
+}
+
+function writeCommandOutput(target, content, opts) {
+  if (opts.output) {
+    writeFile(target, content, opts);
+    return;
+  }
+  writeGeneratedFile(target, content, opts);
 }
 
 function writeFile(target, content, opts) {

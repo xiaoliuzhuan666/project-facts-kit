@@ -21,6 +21,39 @@
 | `rejected` | 不进入共享 Skill，记录原因 |
 | `applied` | 已改入 `skills/`、模板、脚本或 CLI，并完成资料库检查 |
 
+## 2026-07-15 第一阶段实施结果
+
+| 状态 | 数量 | 候选项 | 评审结论 |
+| --- | ---: | --- | --- |
+| `proposed` | 1 | `SFC-20260623-multistep-form-return-state` | 保持等待 owner，不纳入本次实施。 |
+| `needs-evidence` | 0 | 无 | 本次没有此状态的正式候选。 |
+| `accepted` | 0 | 无 | 已接受的 Phase A 候选完成修改和资料库检查，转为 `applied`。 |
+| `rejected` | 0 | 无 | 本次没有新增拒绝项。 |
+| `applied` | 2 | `SFC-20260618-daily-change-inventory`、`SFC-20260715-universal-low-intrusion-phase-a` | Phase A 已修改 CLI、安装脚本、Plugin 分发、Skill 和文档，并通过资料库检查。 |
+
+分类结果：
+
+- 通用工作流改进：已增加浅层、零写入 `inspect`，发现阶段不读取实现源码。
+- CLI/脚本缺陷：已统一版本与命令 contract、generated-file ownership、helper scripts 显式启用、Repomix 可复现与安全调用。
+- 模板/分发缺陷：根 `skills/` 已作为唯一来源，两个 Plugin 副本由同步检查保证一致；CI 模板不再调用未实现命令。
+- 项目专属业务规则：无。
+- 低 token 路由缺口：本阶段只实现只读发现入口；token-budgeted router 留待真实任务验证。
+- CodeGraph/RAG/memory layer：本阶段不实现，保持研究状态。
+
+状态变化：`SFC-20260715-universal-low-intrusion-phase-a` 从 `accepted` 转为 `applied`。
+
+证据检查：
+
+| 候选项 | 真实任务来源 | 证据路径 | 验证结果 | 适用范围 | Reviewer/owner |
+| --- | --- | --- | --- | --- | --- |
+| `SFC-20260715-universal-low-intrusion-phase-a` | 用户在调研后明确要求开始迭代 | 候选文件、调研报告、CLI、安装脚本、Plugin、Skill、CI 模板和检查脚本 | CLI/Bash 语法、`check-kit.sh`、`git diff --check`、两个 Skill 和两个 Plugin 校验均通过 | 通用工作流与工具链；不含业务规则、CodeGraph/RAG/memory 实现 | User acting as Tool/library owner，Accepted 2026-07-15 |
+
+可进入 PR 的项：当前 Phase A 工作区改动。没有仅处于 `accepted` 且尚未实现的候选。
+
+需要补证据的项：`SFC-20260623-multistep-form-return-state` 仍缺 Tool/library owner 决定，完整真实下单返回链路仍为 `Not run`；保持 `proposed`。
+
+未执行检查：GitHub Actions hosted run、npm publish/install、live Repomix measurement、真实业务项目接入和真实任务 A/B，均为 `Not run`。
+
 ## 2026-07-14 评审状态
 
 | 状态 | 数量 | 候选项 | 评审结论 |
@@ -53,6 +86,7 @@
 | --- | --- | --- | --- | --- |
 | `<SFC-YYYYMMDD-name>` | `<project-facts/skill-feedback/...>` | `<improve_skill/new_skill/tooling_fix>` | `proposed` | `<fill>` |
 | `SFC-20260623-multistep-form-return-state` | `docs/skill-feedback/2026-06-23-multistep-form-return-state.md` | `improve_skill` | `proposed` | 2026-07-14 复核：真实任务、证据路径、验证结果和适用范围已记录；Reviewer 仍为 Pending，不能标为 `accepted`。具体路由、字段和 `advancePreDays` 留在目标项目事实。 |
+| `SFC-20260715-universal-low-intrusion-phase-a` | `docs/skill-feedback/2026-07-15-universal-low-intrusion-phase-a.md` | `tooling_fix` | `applied` | 2026-07-15 已完成 Phase A 修改；CLI/Bash、资料库、Skill 和 Plugin 检查通过。 |
 
 ## 已优化到 skill 的项目
 
@@ -85,6 +119,7 @@
 
 | 项目 | 变化 | 验证 |
 | --- | --- | --- |
+| 通用性与低侵入 Phase A | 增加浅层零写入 `inspect`；helper 改为显式安装；默认生成文件增加 ownership guard；Repomix 固定版本并启用默认安全扫描；版本、Plugin Skill 和当前命令文档统一 | `scripts/check-kit.sh` 覆盖 inspect 目录不变、默认/显式 helper、Markdown/JSON/JSONL/hooks 拒绝覆盖、旧生成文件升级、版本和 Plugin 同步；Skill 与 Plugin 校验通过 |
 | `ticket-console-ui` 误标为 Java 后端 | `repoRole()` 改为先看技术栈，再看 `ticket` 等业务词；Vue/Node 项目会生成前端角色和前端读取顺序 | `scripts/check-kit.sh` 新增临时 `ticket-console-ui` Vue fixture，若生成“票务 Java 后端”会失败 |
 | Vue 控制台前端索引标题误写“小程序” | uni-app 继续生成“小程序 API/页面”标题，普通 Vue 仓库生成“前端 API/页面”标题 | `scripts/check-kit.sh` 同时断言 uni-app 与 Vue fixture 的标题 |
 
@@ -100,6 +135,7 @@
 
 | 日期 | 候选项 | 结果 | 评审摘要 | 下一步 |
 | --- | --- | --- | --- | --- |
+| 2026-07-15 | `SFC-20260715-universal-low-intrusion-phase-a` | `applied` | 用户以 Tool/library owner 身份接受 Phase A；通用 CLI、安装边界、Plugin 分发、生成文件 ownership 和 Repomix 安全配置已实施并通过检查。 | 提交 PR 审阅；动态路由、更多语言 provider、CodeGraph/RAG/memory 保持独立研究项。 |
 | 2026-07-14 | 全部候选 | 状态不变 | 自上次运行后没有新增或修改候选文件，也没有新的 Tool/library owner 记录。2 个候选的来源、证据、验证、适用范围和 reviewer 字段均已复核。 | `SFC-20260623-multistep-form-return-state` 等 owner 决定；通过前不改正式 Skill 或工具。 |
 | 2026-07-13 | `SFC-20260623-multistep-form-return-state` | `proposed` | 候选有真实来源和可查证据；`../崆峒/kt-travel-lite-web/project-facts/verification.md` 记录 build 通过、入口页浏览器检查、完整真实链路未验证、lint 失败来自历史债务。没有 Tool/library owner 接受记录。 | 等 Tool/library owner 审阅；通过前不改 `skills/`、`template/`、`scripts/` 或 CLI。 |
 | 2026-07-13 | `SFC-20260618-daily-change-inventory` | `applied` | 候选文件记录 user 作为 Tool/library owner 接受；提交 `d89efa1` 和当前 Skill、CLI prompt、文档内容可确认已应用。 | 无需动作。 |
