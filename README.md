@@ -46,6 +46,18 @@ bash -lc 'set -e; KIT="$HOME/.cache/project-facts-kit"; REPO="https://github.com
 
 如果 GitHub clone 失败，检查网络、账号权限或 Git 凭据。更多可复制命令见 [Project Facts Kit 更新命令速查](docs/project-facts-kit-update-commands.zh-CN.md)。
 
+本机 kit 准备好以后，日常项目操作只记两条：
+
+```bash
+# 当前项目还没有接入
+~/.cache/project-facts-kit/scripts/install-project-facts.sh . --lite && ai-context-kit onboard -w .
+
+# 当前项目已经接入
+ai-context-kit upgrade -w .
+```
+
+未接入项目的单行命令先安装轻量事实模板，再创建缺失的上下文资料。`upgrade` 只刷新 ai-context-kit 拥有的生成资料。刷新 project-local Skill 和补 helper 属于维护者操作，不是每次项目升级的必经步骤。
+
 ### 2. 在目标项目里使用三句入口
 
 普通使用者不需要记 CLI。打开目标项目 workspace 后，对 Agent 说下面三句之一：
@@ -65,6 +77,8 @@ bash -lc 'set -e; KIT="$HOME/.cache/project-facts-kit"; REPO="https://github.com
 ```bash
 ./scripts/install-project-facts.sh /absolute/path/to/target-repo --lite
 ```
+
+默认不会向目标仓库的 `scripts/` 写 helper。确有需要时显式增加 `--with-helper-scripts`。
 
 安装后，把 `project-facts/AGENTS.fragment.md` 中适合该项目的内容合并进目标仓库 `AGENTS.md`，并填写首批事实文件：
 
@@ -96,7 +110,13 @@ bash -lc 'set -e; KIT="$HOME/.cache/project-facts-kit"; REPO="https://github.com
 
 ### 已接入项目升级
 
-升级只补新版候选模板、最新 `AGENTS` 片段、缺失辅助脚本和可选 Skill。已有 `project.md`、`runtime.md`、`specs/`、`handover/` 和人工维护的 `AGENTS.md` 不会被覆盖。
+普通项目直接刷新工具生成资料：
+
+```bash
+ai-context-kit upgrade -w .
+```
+
+需要同步新版候选模板、最新 `AGENTS` 片段或 project-local Skill 时，再使用维护者命令。已有 `project.md`、`runtime.md`、`specs/`、`handover/` 和人工维护的 `AGENTS.md` 不会被覆盖；helper 仍需显式增加 `--with-helper-scripts`。
 
 ```bash
 ./scripts/install-project-facts.sh /absolute/path/to/project \
@@ -110,6 +130,7 @@ bash -lc 'set -e; KIT="$HOME/.cache/project-facts-kit"; REPO="https://github.com
 当一个父目录下有后端、前端、小程序等多个独立仓库时，使用 `ai-context-kit`：
 
 ```bash
+ai-context-kit inspect --workspace /absolute/path/to/parent
 ai-context-kit doctor --workspace /absolute/path/to/parent
 ai-context-kit onboard --workspace /absolute/path/to/parent
 ai-context-kit token-status --workspace /absolute/path/to/parent
@@ -119,6 +140,7 @@ ai-context-kit token-status --workspace /absolute/path/to/parent
 
 | 命令 | 用途 |
 | --- | --- |
+| `inspect` | 零写入识别仓库和已有 AGENTS、project-facts、OpenSpec 等规范 |
 | `doctor` | 检查路由、索引、项目事实和能力状态 |
 | `onboard` | 补齐缺失的流程材料并输出状态 |
 | `upgrade` | 刷新已有生成资料 |
@@ -180,6 +202,7 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 | Skill 是否适合作为载体 | [Skill 作为载体的评估](docs/skill-carrier-assessment.zh-CN.md) |
 | 自动化候选和评审 | [Skill 反哺自动化运行手册](docs/skill-feedback-automation-runbook.zh-CN.md) |
 | 真实任务验证缺口 | [真实任务 A/B 审计](docs/ai-context-kit-real-task-ab-audit.md) |
+| 通用性与同类项目调研 | [Project Facts Kit 通用性、效果与低侵入调研报告](docs/research/project-facts-context-market-research-2026-07-15.zh-CN.md) |
 | neuDrive 迁移边界 | [迁移与接入说明](docs/neudrive-integration.zh-CN.md) |
 
 ## 维护与验证

@@ -32,6 +32,17 @@ CLI 链接会优先使用 `npm link`；如果 npm 全局目录没有写权限，
 ~/.cache/project-facts-kit/scripts/setup-local-kit.sh --skip-npm-link
 ```
 
+## 日常项目命令
+
+本机 kit 准备完成后，普通项目只使用下面两条入口：
+
+| 项目状态 | 命令 | 行为 |
+| --- | --- | --- |
+| 未接入 | `~/.cache/project-facts-kit/scripts/install-project-facts.sh . --lite && ai-context-kit onboard -w .` | 安装轻量模板，创建缺失的工作流资料并输出状态 |
+| 已接入 | `ai-context-kit upgrade -w .` | 刷新工具拥有的生成资料并输出状态 |
+
+两条命令都使用当前目录，不要求重复填写绝对路径。首次接入的前半段安装轻量模板，`onboard` 再生成缺失的上下文资料；`upgrade` 不覆盖没有 ownership 标记的同名文件。project-local Skill 和 helper 更新继续放在下方维护者命令中。
+
 ## 普通同事在目标项目里的三句入口
 
 本机准备完成后，打开目标业务项目 workspace，对 Agent 说下面三句之一：
@@ -52,6 +63,12 @@ CLI 链接会优先使用 `npm link`；如果 npm 全局目录没有写权限，
 帮我做项目事实 kit 首次接入。
 ```
 
+已经安装 CLI 时，直接在目标项目运行：
+
+```bash
+~/.cache/project-facts-kit/scripts/install-project-facts.sh . --lite && ai-context-kit onboard -w .
+```
+
 维护者需要显式执行时，用轻量模式：
 
 ```bash
@@ -66,6 +83,14 @@ CLI 链接会优先使用 `npm link`；如果 npm 全局目录没有写权限，
   --skill-dir /absolute/path/to/project/.codex/skills
 ```
 
+默认不向目标仓库的 `scripts/` 写 helper。项目需要 `generate-repo-map.sh` 和 `sync-skills.sh` 时显式增加：
+
+```bash
+~/.cache/project-facts-kit/scripts/install-project-facts.sh /absolute/path/to/project \
+  --lite \
+  --with-helper-scripts
+```
+
 ## 已接入项目升级的显式命令
 
 普通使用者推荐说：
@@ -74,7 +99,13 @@ CLI 链接会优先使用 `npm link`；如果 npm 全局目录没有写权限，
 帮我做项目事实 kit 已接入升级，不覆盖已有事实。
 ```
 
-维护者需要显式执行时：
+普通项目直接运行：
+
+```bash
+ai-context-kit upgrade -w .
+```
+
+需要刷新 project-local Skill、候选模板或 `AGENTS` 片段时，再执行维护者命令：
 
 ```bash
 ~/.cache/project-facts-kit/scripts/install-project-facts.sh /absolute/path/to/project \
@@ -83,7 +114,7 @@ CLI 链接会优先使用 `npm link`；如果 npm 全局目录没有写权限，
   --refresh-skills
 ```
 
-如果只想补新版候选模板、最新 `AGENTS` 片段和缺失辅助脚本，不替换项目内 Skill，去掉 `--refresh-skills`：
+如果只想补新版候选模板和最新 `AGENTS` 片段，不替换项目内 Skill，去掉 `--refresh-skills`：
 
 ```bash
 ~/.cache/project-facts-kit/scripts/install-project-facts.sh /absolute/path/to/project \
@@ -91,9 +122,17 @@ CLI 链接会优先使用 `npm link`；如果 npm 全局目录没有写权限，
   --skill-dir /absolute/path/to/project/.codex/skills
 ```
 
+升级时确实需要补 helper，再添加 `--with-helper-scripts`。已有同名 helper 会保留，不会覆盖。
+
 升级不会覆盖已有 `project.md`、`runtime.md`、`specs/`、`handover/` 和人工维护的 `AGENTS.md`。如果生成了 `project-facts/AGENTS.fragment.latest.md`，只把适合当前项目的内容合并到根 `AGENTS.md`。
 
 ## 多仓库 workspace 资料刷新
+
+识别仓库和已有规范，不写文件：
+
+```bash
+ai-context-kit inspect --workspace /absolute/path/to/workspace
+```
 
 首次准备或缺工作流材料：
 
@@ -128,12 +167,15 @@ ai-context-kit repair --workspace /absolute/path/to/workspace
 根包入口等价：
 
 ```bash
+project-facts-kit context inspect --workspace /absolute/path/to/workspace
 project-facts-kit context onboard --workspace /absolute/path/to/workspace
 project-facts-kit context doctor --workspace /absolute/path/to/workspace
 project-facts-kit context upgrade --workspace /absolute/path/to/workspace
 project-facts-kit context repair --workspace /absolute/path/to/workspace
 project-facts-kit context init --workspace /absolute/path/to/workspace
 ```
+
+`upgrade` 和带 `--force` 的命令只刷新工具拥有的生成文件。Markdown 使用 `generated-by: ai-context-kit` marker；固定文件名且匹配严格历史签名的旧生成 Markdown 可在升级时补上 marker，其他没有 ownership 标记的同名文件保持不变。显式 `--output` 由调用者负责确认目标路径。
 
 ## token 与编辑器任务刷新
 

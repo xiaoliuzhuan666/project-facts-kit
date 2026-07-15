@@ -1,6 +1,6 @@
 {
   "name": "project-facts-kit",
-  "version": "0.3.59",
+  "version": "0.3.60",
   "description": "Project facts and low-token context workflows for Codex teams.",
   "author": {
     "name": "Project Facts Kit maintainers"
@@ -16,7 +16,7 @@
   "interface": {
     "displayName": "Project Facts Kit",
     "shortDescription": "Keep project facts, handoffs, and low-token reads consistent.",
-    "longDescription": "Project Facts Kit packages two Codex skills: one for maintaining project facts and one for low-token multi-repo context control. Use the npm CLI to install templates and generate audit/status files; use this plugin to make the Codex workflow available to teammates.",
+    "longDescription": "Project Facts Kit packages two Codex skills: one for maintaining project facts and one for low-token multi-repo context control. Use the CLI for read-only workspace inspection, managed context generation and token reports; use this plugin to make the reviewed Codex workflow available to teammates.",
     "developerName": "Project Facts Kit maintainers",
     "category": "Productivity",
     "capabilities": [

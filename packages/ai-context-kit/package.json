@@ -1,6 +1,6 @@
 {
   "name": "ai-context-kit",
-  "version": "0.3.55",
+  "version": "0.3.60",
   "description": "Generate workspace AGENTS.md and project-facts for Codex app context control.",
   "type": "module",
   "bin": {

@@ -38,9 +38,9 @@ fallback under that directory. When it does not exist, tell the user to clone or
 update the public kit repository first; GitHub repository access may require
 network access, account permissions or Git credentials.
 
-1. Read only lightweight entry points first: `AGENTS.md`, README or project entry docs, package manifests such as `package.json`, `pom.xml` or `go.mod`, and any existing `project-facts/`.
+1. Read only lightweight entry points first: `AGENTS.md`, README or project entry docs, package manifests such as `package.json`, `pom.xml` or `go.mod`, and any existing `project-facts/`. When the existing standards or write boundary are unknown, use `ai-context-kit inspect --workspace <path>` before a command that creates files.
 2. Decide whether the target is a single repository or a parent workspace. For a parent workspace, follow `low-token-context-maintainer` before reading implementation files.
-3. If `project-facts/` is absent and local instructions allow writing, prefer the kit installer in lite mode. If `project-facts/` exists, read and assess it; do not overwrite existing facts.
+3. If `project-facts/` is absent and local instructions allow writing, prefer the kit installer in lite mode. The installer does not copy helper scripts into the target repository unless `--with-helper-scripts` is explicitly provided. If `project-facts/` exists, read and assess it; do not overwrite existing facts.
 4. Fill or update `project.md`, `glossary.md`, `iteration-plan.md`, `handover/current.md`, `handover/for-next-maintainer.md`, and the current task's `specs/<domain>/spec.md` when the repository rules allow edits.
 5. For the most important current task, maintain a small table with behavior or requirement, status, source path, latest verification, and unknowns.
 6. Treat implementation behavior as `OBSERVED` until an approved source or owner decision confirms intent. Never turn code, tests, or agent agreement into `APPROVED` by themselves.

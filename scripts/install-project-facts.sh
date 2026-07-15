@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  printf 'Usage: %s <target-repository> [--lite] [--skill-dir <directory>] [--upgrade-existing] [--refresh-skills]\n' "$0" >&2
+  printf 'Usage: %s <target-repository> [--lite] [--skill-dir <directory>] [--with-helper-scripts] [--upgrade-existing] [--refresh-skills]\n' "$0" >&2
   exit 2
 }
 
@@ -16,6 +16,7 @@ skill_dir=""
 install_mode="full"
 upgrade_existing="false"
 refresh_skills="false"
+with_helper_scripts="false"
 helper_scripts=(
   "generate-repo-map.sh"
   "sync-skills.sh"
@@ -31,6 +32,10 @@ while [[ $# -gt 0 ]]; do
       [[ $# -ge 2 ]] || usage
       skill_dir="$2"
       shift 2
+      ;;
+    --with-helper-scripts)
+      with_helper_scripts="true"
+      shift
       ;;
     --upgrade-existing)
       upgrade_existing="true"
@@ -75,7 +80,7 @@ if [[ "$upgrade_existing" == "true" && ! -d "$fact_destination" ]]; then
   exit 1
 fi
 
-if [[ "$upgrade_existing" != "true" ]]; then
+if [[ "$upgrade_existing" != "true" && "$with_helper_scripts" == "true" ]]; then
   for helper_script in "${helper_scripts[@]}"; do
     helper_destination="$target/scripts/$helper_script"
     if [[ -e "$helper_destination" ]]; then
@@ -173,7 +178,9 @@ install_skill() {
 if [[ "$upgrade_existing" == "true" ]]; then
   copy_if_missing "$repo_root/template/project-facts/skill-feedback/_template.md" "$fact_destination/skill-feedback/_template.md" "skill feedback template"
   install_agents_fragment_for_upgrade
-  install_helper_scripts
+  if [[ "$with_helper_scripts" == "true" ]]; then
+    install_helper_scripts
+  fi
   if [[ -n "$skill_dir" ]]; then
     for skill_name in project-facts-maintainer low-token-context-maintainer; do
       install_skill "$skill_name"
@@ -197,13 +204,15 @@ if [[ -n "$skill_dir" ]]; then
   done
 fi
 
-for helper_script in "${helper_scripts[@]}"; do
-  helper_destination="$target/scripts/$helper_script"
-  if [[ -e "$helper_destination" ]]; then
-    printf 'Refusing to overwrite existing helper script: %s\n' "$helper_destination" >&2
-    exit 1
-  fi
-done
+if [[ "$with_helper_scripts" == "true" ]]; then
+  for helper_script in "${helper_scripts[@]}"; do
+    helper_destination="$target/scripts/$helper_script"
+    if [[ -e "$helper_destination" ]]; then
+      printf 'Refusing to overwrite existing helper script: %s\n' "$helper_destination" >&2
+      exit 1
+    fi
+  done
+fi
 
 if [[ "$install_mode" == "lite" ]]; then
   mkdir -p "$fact_destination/handover" "$fact_destination/skill-feedback" "$fact_destination/specs/_template"
@@ -231,13 +240,19 @@ if [[ -n "$skill_dir" ]]; then
   done
 fi
 
-# 安装辅助自动化脚本
-install_helper_scripts
+# 辅助脚本只在显式启用时安装，避免默认修改目标仓库 scripts/。
+if [[ "$with_helper_scripts" == "true" ]]; then
+  install_helper_scripts
+fi
 
 printf 'Installed %s project facts templates into %s\n' "$install_mode" "$fact_destination"
-printf 'Installed optional helper scripts to %s/scripts/\n' "$target"
 printf 'Review project-facts/AGENTS.fragment.md and merge applicable rules into the target repository AGENTS.md.\n'
-printf 'Optional next steps: run ./scripts/generate-repo-map.sh %s, and review ./scripts/sync-skills.sh before using it.\n' "$target"
+if [[ "$with_helper_scripts" == "true" ]]; then
+  printf 'Installed optional helper scripts to %s/scripts/\n' "$target"
+  printf 'Optional next steps: run ./scripts/generate-repo-map.sh %s, and review ./scripts/sync-skills.sh before using it.\n' "$target"
+else
+  printf 'Helper scripts were not installed. Add --upgrade-existing --with-helper-scripts later if this repository needs them.\n'
+fi
 if [[ "$install_mode" == "lite" ]]; then
   printf 'Lite mode installed project.md, glossary.md, runtime.md, iteration-plan.md, handover files, one skill feedback template, one spec template, and AGENTS.fragment.md only.\n'
 fi

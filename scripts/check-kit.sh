@@ -48,9 +48,11 @@ required_files=(
   "template/project-facts/decisions/ADR-0000-template.md"
   "template/project-facts/handover/current.md"
   "template/project-facts/handover/for-next-maintainer.md"
+  "template/github/workflows/ai-context-kit-context-check.yml"
   "docs/team-training-iteration-runbook.zh-CN.md"
   "scripts/generate-repo-map.sh"
   "scripts/setup-local-kit.sh"
+  "scripts/sync-plugin-skills.sh"
   "scripts/sync-skills.sh"
   "skills/project-facts-maintainer/SKILL.md"
   "skills/project-facts-maintainer/agents/openai.yaml"
@@ -59,6 +61,9 @@ required_files=(
   "skills/project-facts-maintainer/references/business-domain-report-template.md"
   "skills/low-token-context-maintainer/SKILL.md"
   "skills/low-token-context-maintainer/agents/openai.yaml"
+  "plugins/project-facts-kit/.codex-plugin/plugin.json"
+  "plugins/project-facts-kit/skills/project-facts-maintainer/SKILL.md"
+  "plugins/project-facts-kit/skills/low-token-context-maintainer/SKILL.md"
   "plugins/project-facts-kit-codex/.codex-plugin/plugin.json"
   "plugins/project-facts-kit-codex/skills/project-facts-maintainer/SKILL.md"
   "plugins/project-facts-kit-codex/skills/low-token-context-maintainer/SKILL.md"
@@ -73,6 +78,38 @@ for path in "${required_files[@]}"; do
     exit 1
   fi
 done
+
+canonical_version="$(node -p 'require(process.argv[1]).version' "$repo_root/packages/ai-context-kit/package.json")"
+root_version="$(node -p 'require(process.argv[1]).version' "$repo_root/package.json")"
+marketplace_plugin_version="$(node -p 'require(process.argv[1]).version' "$repo_root/plugins/project-facts-kit/.codex-plugin/plugin.json")"
+codex_plugin_version="$(node -p 'require(process.argv[1]).version' "$repo_root/plugins/project-facts-kit-codex/.codex-plugin/plugin.json")"
+if [[ "$root_version" != "$canonical_version" || "$marketplace_plugin_version" != "$canonical_version" || "$codex_plugin_version" != "$canonical_version" ]]; then
+  printf 'Version contract mismatch: cli=%s root=%s marketplace-plugin=%s codex-plugin=%s\n' \
+    "$canonical_version" "$root_version" "$marketplace_plugin_version" "$codex_plugin_version" >&2
+  exit 1
+fi
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" --version | grep -Fxq "ai-context-kit $canonical_version"
+"$repo_root/scripts/sync-plugin-skills.sh" --check
+grep -Fq 'not adopted: ~/.cache/project-facts-kit/scripts/install-project-facts.sh . --lite && ai-context-kit onboard -w .' "$repo_root/scripts/setup-local-kit.sh"
+grep -Fq 'adopted:     ai-context-kit upgrade -w .' "$repo_root/scripts/setup-local-kit.sh"
+grep -Fq 'install-project-facts.sh . --lite && ai-context-kit onboard -w .' "$repo_root/README.md"
+grep -Fq 'ai-context-kit upgrade -w .' "$repo_root/README.md"
+grep -Fq "AI_CONTEXT_KIT_PACKAGE: ai-context-kit@$canonical_version" "$repo_root/template/github/workflows/ai-context-kit-context-check.yml"
+grep -Fq 'const REPOMIX_PACKAGE = "repomix@1.16.1";' "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs"
+if rg -n -- 'repomix@latest|--no-security-check' "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs"; then
+  printf 'CLI still uses a floating Repomix version or disables its security check.\n' >&2
+  exit 1
+fi
+if rg -n 'ai-context-kit (install|quickstart|audit|status)\b|--inject-package-scripts|--with-ci|--fail-on-warning' \
+  "$repo_root/README.md" \
+  "$repo_root/docs/adoption-guide.zh-CN.md" \
+  "$repo_root/docs/project-facts-kit-update-commands.zh-CN.md" \
+  "$repo_root/packages/ai-context-kit/README.md" \
+  "$repo_root/skills" \
+  "$repo_root/template"; then
+  printf 'Current usage docs, skills or templates reference an unimplemented CLI contract.\n' >&2
+  exit 1
+fi
 
 (
   cd "$repo_root"
@@ -99,7 +136,7 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/target" "$tmp/skills"
 
-"$repo_root/scripts/install-project-facts.sh" "$tmp/target" --skill-dir "$tmp/skills" >/dev/null
+"$repo_root/scripts/install-project-facts.sh" "$tmp/target" --skill-dir "$tmp/skills" --with-helper-scripts >/dev/null
 test -s "$tmp/target/project-facts/project.md"
 test -s "$tmp/target/project-facts/runtime.md"
 test -s "$tmp/target/project-facts/iteration-plan.md"
@@ -140,7 +177,7 @@ fi
 
 mkdir -p "$tmp/helper-conflict/scripts"
 printf 'existing helper\n' > "$tmp/helper-conflict/scripts/generate-repo-map.sh"
-if "$repo_root/scripts/install-project-facts.sh" "$tmp/helper-conflict" >/dev/null 2>&1; then
+if "$repo_root/scripts/install-project-facts.sh" "$tmp/helper-conflict" --with-helper-scripts >/dev/null 2>&1; then
   printf 'Installer unexpectedly overwrote an existing helper script.\n' >&2
   exit 1
 fi
@@ -156,7 +193,7 @@ printf 'existing project facts\n' > "$tmp/upgrade-target/project-facts/project.m
 printf 'old fragment\n' > "$tmp/upgrade-target/project-facts/AGENTS.fragment.md"
 printf 'existing helper\n' > "$tmp/upgrade-target/scripts/generate-repo-map.sh"
 printf 'old skill\n' > "$tmp/upgrade-skills/project-facts-maintainer/SKILL.md"
-"$repo_root/scripts/install-project-facts.sh" "$tmp/upgrade-target" --upgrade-existing --skill-dir "$tmp/upgrade-skills" >/dev/null
+"$repo_root/scripts/install-project-facts.sh" "$tmp/upgrade-target" --upgrade-existing --skill-dir "$tmp/upgrade-skills" --with-helper-scripts >/dev/null
 grep -Fxq 'existing project facts' "$tmp/upgrade-target/project-facts/project.md"
 grep -Fxq 'existing helper' "$tmp/upgrade-target/scripts/generate-repo-map.sh"
 grep -Fxq 'old skill' "$tmp/upgrade-skills/project-facts-maintainer/SKILL.md"
@@ -186,6 +223,10 @@ test -s "$tmp/lite-target/project-facts/handover/current.md"
 test -s "$tmp/lite-target/project-facts/handover/for-next-maintainer.md"
 test -s "$tmp/lite-target/project-facts/specs/_template/spec.md"
 test -s "$tmp/lite-target/project-facts/AGENTS.fragment.md"
+if [[ -e "$tmp/lite-target/scripts/generate-repo-map.sh" || -e "$tmp/lite-target/scripts/sync-skills.sh" ]]; then
+  printf 'Lite install unexpectedly included helper scripts without --with-helper-scripts.\n' >&2
+  exit 1
+fi
 if [[ -e "$tmp/lite-target/project-facts/changes/_template/proposal.md" ]]; then
   printf 'Lite install unexpectedly included change templates.\n' >&2
   exit 1
@@ -194,6 +235,90 @@ if [[ -e "$tmp/lite-target/project-facts/integration/github" ]]; then
   printf 'Lite install unexpectedly included GitHub integration files.\n' >&2
   exit 1
 fi
+
+mkdir -p "$tmp/lite-helper-target"
+"$repo_root/scripts/install-project-facts.sh" "$tmp/lite-helper-target" --lite --with-helper-scripts >/dev/null
+test -x "$tmp/lite-helper-target/scripts/generate-repo-map.sh"
+test -x "$tmp/lite-helper-target/scripts/sync-skills.sh"
+
+mkdir -p "$tmp/full-default-target"
+"$repo_root/scripts/install-project-facts.sh" "$tmp/full-default-target" >/dev/null
+test -s "$tmp/full-default-target/project-facts/changes/_template/proposal.md"
+if [[ -e "$tmp/full-default-target/scripts/generate-repo-map.sh" || -e "$tmp/full-default-target/scripts/sync-skills.sh" ]]; then
+  printf 'Full install unexpectedly included helper scripts without --with-helper-scripts.\n' >&2
+  exit 1
+fi
+
+mkdir -p "$tmp/quick-entry"
+git -C "$tmp/quick-entry" init >/dev/null 2>&1
+printf '{"name":"quick-entry"}\n' > "$tmp/quick-entry/package.json"
+(
+  cd "$tmp/quick-entry"
+  "$repo_root/scripts/install-project-facts.sh" . --lite >/dev/null
+  "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" onboard -w . >/dev/null
+)
+test -s "$tmp/quick-entry/project-facts/runtime.md"
+test -s "$tmp/quick-entry/AGENTS.md"
+test -s "$tmp/quick-entry/docs/ai-context-scope-report.md"
+test -s "$tmp/quick-entry/.codex-mem/index.jsonl"
+printf '# Team-approved project facts\n' > "$tmp/quick-entry/project-facts/project.md"
+(
+  cd "$tmp/quick-entry"
+  "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" upgrade -w . >/dev/null
+)
+grep -Fxq '# Team-approved project facts' "$tmp/quick-entry/project-facts/project.md"
+
+mkdir -p \
+  "$tmp/inspect-workspace/openspec" \
+  "$tmp/inspect-workspace/project-facts" \
+  "$tmp/inspect-workspace/app/.continue/rules"
+git -C "$tmp/inspect-workspace/app" init >/dev/null 2>&1
+printf '# Existing agent rules\n' > "$tmp/inspect-workspace/AGENTS.md"
+printf 'apiVersion: backstage.io/v1alpha1\n' > "$tmp/inspect-workspace/catalog-info.yaml"
+printf '# Existing facts\n' > "$tmp/inspect-workspace/project-facts/README.md"
+printf '# OpenSpec\n' > "$tmp/inspect-workspace/openspec/README.md"
+printf '{"name":"inspect-app"}\n' > "$tmp/inspect-workspace/app/package.json"
+printf '# Continue rule\n' > "$tmp/inspect-workspace/app/.continue/rules/context.md"
+printf '* @context-owner\n' > "$tmp/inspect-workspace/app/CODEOWNERS"
+(
+  cd "$tmp/inspect-workspace"
+  find . -path '*/.git' -prune -o -print | LC_ALL=C sort
+  find . -path '*/.git' -prune -o -type f -print | LC_ALL=C sort | while IFS= read -r file; do
+    shasum -a 256 "$file"
+  done
+) > "$tmp/inspect-before.txt"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" inspect --workspace "$tmp/inspect-workspace" > "$tmp/inspect.md"
+grep -Fq 'mode: read-only' "$tmp/inspect.md"
+grep -Fq 'writes: 0' "$tmp/inspect.md"
+grep -Fq 'source scan: skipped' "$tmp/inspect.md"
+grep -Fq 'workspace: openspec (openspec)' "$tmp/inspect.md"
+grep -Fq 'repository:app: continue-rules (app/.continue/rules)' "$tmp/inspect.md"
+grep -Fq 'No files were changed.' "$tmp/inspect.md"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" inspect --workspace "$tmp/inspect-workspace" --json > "$tmp/inspect.json"
+node - "$tmp/inspect.json" "$tmp/inspect-workspace" <<'NODE'
+const fs = require("fs");
+const [jsonPath, absoluteWorkspace] = process.argv.slice(2);
+const data = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+if (data.mode !== "read-only" || data.writes !== 0 || data.workspace !== ".") process.exit(1);
+if (data.sourceScan !== "skipped" || data.implementationFilesRead !== 0) process.exit(1);
+if (!data.existingStandards.some((item) => item.kind === "openspec" && item.path === "openspec")) process.exit(1);
+if (!data.existingStandards.some((item) => item.kind === "continue-rules" && item.path === "app/.continue/rules")) process.exit(1);
+if (!data.repositories.some((item) => item.path === "app" && item.files === null)) process.exit(1);
+if (JSON.stringify(data).includes(absoluteWorkspace)) process.exit(1);
+NODE
+if "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" inspect --workspace "$tmp/inspect-workspace" --output "$tmp/inspect-output.md" >/dev/null 2>&1; then
+  printf 'inspect unexpectedly accepted --output.\n' >&2
+  exit 1
+fi
+test ! -e "$tmp/inspect-output.md"
+(
+  cd "$tmp/inspect-workspace"
+  find . -path '*/.git' -prune -o -print | LC_ALL=C sort
+  find . -path '*/.git' -prune -o -type f -print | LC_ALL=C sort | while IFS= read -r file; do
+    shasum -a 256 "$file"
+  done
+) > "$tmp/inspect-after.txt"
+cmp "$tmp/inspect-before.txt" "$tmp/inspect-after.txt"
 
 mkdir -p "$tmp/redact"
 printf '%s\n' \
@@ -308,6 +433,13 @@ test -s "$tmp/missing-workflow/go-service/AGENTS.md"
 test -s "$tmp/missing-workflow/go-service/project-facts/verification.md"
 test -s "$tmp/missing-workflow/ticket-console-ui/AGENTS.md"
 test -s "$tmp/missing-workflow/ticket-console-ui/project-facts/api-endpoints.md"
+grep -Fq '<!-- generated-by: ai-context-kit -->' "$tmp/missing-workflow/AGENTS.md"
+grep -Fq '<!-- generated-by: ai-context-kit -->' "$tmp/missing-workflow/docs/ai-context-workspace-map.md"
+grep -Fq '<!-- generated-by: ai-context-kit -->' "$tmp/missing-workflow/docs/ai-context-api-contract-map.md"
+grep -Fq '<!-- generated-by: ai-context-kit -->' "$tmp/missing-workflow/docs/ai-context-scope-report.md"
+grep -Fq '<!-- generated-by: ai-context-kit -->' "$tmp/missing-workflow/.codex-mem/README.md"
+grep -Fq '# generated-by: ai-context-kit' "$tmp/missing-workflow/.codex-mem/.gitignore"
+grep -Fq '"generatedBy":"ai-context-kit codex-mem"' "$tmp/missing-workflow/.codex-mem/index.jsonl"
 grep -Fq '多仓库工作区' "$tmp/missing-workflow/AGENTS.md"
 grep -Fq 'ai-context-kit contracts' "$tmp/missing-workflow/AGENTS.md"
 grep -Fq '不要整段读取契约索引' "$tmp/missing-workflow/AGENTS.md"
@@ -392,12 +524,14 @@ grep -Fq '"path":"docs/ai-context-workspace-map.md"' "$tmp/missing-workflow/.cod
 printf '%s\n' \
   '# 跨端 API 契约索引' \
   '' \
+  '> 由 ai-context-kit 静态扫描生成。只用于定位前后端契约检查入口。' \
+  '' \
   '| Frontend repo | Endpoint | Symbol | Frontend file | Backend repo | Handler | Request DTO fields | Response type |' \
   '|---|---|---|---|---|---|---|---|' \
   '| `web-app` | `/api/orders/{id}` | `getOrder` | `api/order.ts:1` | `api-service` | `GET /api/orders/{id} OrderController.getOrder` | - | `String` |' \
   > "$tmp/missing-workflow/docs/ai-context-api-contract-map.md"
 printf '%s\n' \
-  '{"id":"api-contract:old:getOrder","type":"api-contract","repo":"web-app","path":"docs/ai-context-api-contract-map.md:5","title":"getOrder /api/orders/{id}","summary":"frontend=web-app; endpoint=/api/orders/{id}; backend=api-service","contract":{"frontendRepo":"web-app","endpoint":"/api/orders/{id}","backendRepo":"api-service"}}' \
+  '{"id":"api-contract:old:getOrder","type":"api-contract","repo":"web-app","path":"docs/ai-context-api-contract-map.md:7","title":"getOrder /api/orders/{id}","summary":"frontend=web-app; endpoint=/api/orders/{id}; backend=api-service","contract":{"frontendRepo":"web-app","endpoint":"/api/orders/{id}","backendRepo":"api-service"},"generatedBy":"ai-context-kit codex-mem"}' \
   > "$tmp/missing-workflow/.codex-mem/index.jsonl"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" doctor --workspace "$tmp/missing-workflow" > "$tmp/missing-workflow-stale-doctor.md"
 grep -Fq 'stale docs/ai-context-api-contract-map.md' "$tmp/missing-workflow-stale-doctor.md"
@@ -433,6 +567,25 @@ grep -Fq 'Field check' "$tmp/missing-workflow/docs/ai-context-api-contract-map.m
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" doctor --workspace "$tmp/missing-workflow" > "$tmp/missing-workflow-refreshed-doctor.md"
 grep -Fq 'ok docs/ai-context-api-contract-map.md' "$tmp/missing-workflow-refreshed-doctor.md"
 grep -Fq 'ok .codex-mem/index.jsonl' "$tmp/missing-workflow-refreshed-doctor.md"
+printf '# Team-owned scope notes\n' > "$tmp/missing-workflow/docs/ai-context-scope-report.md"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" init --workspace "$tmp/missing-workflow" --force > "$tmp/missing-workflow-unowned-init.log"
+grep -Fxq '# Team-owned scope notes' "$tmp/missing-workflow/docs/ai-context-scope-report.md"
+grep -Fq 'skip existing non-ai-context-kit file' "$tmp/missing-workflow-unowned-init.log"
+printf '# Team-owned local ignore\n' > "$tmp/missing-workflow/.codex-mem/.gitignore"
+printf '{"teamOwned":true}\n' > "$tmp/missing-workflow/.codex-mem/workspace.json"
+printf '{"teamOwned":true}\n' > "$tmp/missing-workflow/.codex-mem/index.jsonl"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem init --workspace "$tmp/missing-workflow" --force > "$tmp/missing-workflow-unowned-codex-mem.log"
+grep -Fxq '# Team-owned local ignore' "$tmp/missing-workflow/.codex-mem/.gitignore"
+grep -Fxq '{"teamOwned":true}' "$tmp/missing-workflow/.codex-mem/workspace.json"
+grep -Fxq '{"teamOwned":true}' "$tmp/missing-workflow/.codex-mem/index.jsonl"
+grep -Fq 'skip existing non-ai-context-kit file' "$tmp/missing-workflow-unowned-codex-mem.log"
+mkdir -p "$tmp/missing-workflow/.codex/hooks"
+printf '{"teamOwned":true}\n' > "$tmp/missing-workflow/.codex/hooks.json"
+printf 'console.log("team-owned hook");\n' > "$tmp/missing-workflow/.codex/hooks/codex-mem-hook.mjs"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem install-hooks --workspace "$tmp/missing-workflow" --force > "$tmp/missing-workflow-unowned-hooks.log"
+grep -Fxq '{"teamOwned":true}' "$tmp/missing-workflow/.codex/hooks.json"
+grep -Fxq 'console.log("team-owned hook");' "$tmp/missing-workflow/.codex/hooks/codex-mem-hook.mjs"
+grep -Fq 'skip existing non-ai-context-kit file' "$tmp/missing-workflow-unowned-hooks.log"
 
 mkdir -p "$tmp/context-workspace/app/api" "$tmp/context-workspace/app/services" "$tmp/context-workspace/app/pages/user" "$tmp/context-workspace/app/app/user" "$tmp/context-workspace/app/project-facts"
 mkdir -p "$tmp/context-workspace/spring-service/src/main/java/com/example/demo/controller"
@@ -631,13 +784,22 @@ grep -Fq '/api/users/relative' "$tmp/context-workspace/docs/ai-context-api-contr
 grep -Fq 'UserController.relativeUser' "$tmp/context-workspace/docs/ai-context-api-contract-map.md"
 grep -Fq 'UserResponse' "$tmp/context-workspace/spring-service/project-facts/api-contract-map.md"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" graph --workspace "$tmp/context-workspace" --output "$tmp/context-graph.json" >/dev/null
-grep -Fq '"generatedBy": "ai-context-kit 0.3.55"' "$tmp/context-graph.json"
+grep -Fq "\"generatedBy\": \"ai-context-kit $canonical_version\"" "$tmp/context-graph.json"
 grep -Fq '"type": "frontend-api"' "$tmp/context-graph.json"
 grep -Fq 'runtimeOrderCancel' "$tmp/context-graph.json"
 grep -Fq 'endpoint:/api/runtimeOrder/cancel' "$tmp/context-graph.json"
 grep -Fq 'RuntimeOrderController.cancel' "$tmp/context-graph.json"
 grep -Fq '"type": "request-dto"' "$tmp/context-graph.json"
 grep -Fq 'CreateUserReq' "$tmp/context-graph.json"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" graph --workspace "$tmp/context-workspace" >/dev/null
+grep -Fq "\"generatedBy\": \"ai-context-kit $canonical_version\"" "$tmp/context-workspace/docs/ai-context-graph.json"
+node -e 'const fs=require("fs"); fs.writeFileSync(process.argv[1], JSON.stringify({generatedBy:`ai-context-kit ${process.argv[2]}`,padding:"x".repeat(2.1*1024*1024)}));' "$tmp/context-workspace/docs/ai-context-graph.json" "$canonical_version"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" graph --workspace "$tmp/context-workspace" >/dev/null
+grep -Fq '"type": "frontend-api"' "$tmp/context-workspace/docs/ai-context-graph.json"
+printf '{"teamOwned":true}\n' > "$tmp/context-workspace/docs/ai-context-graph.json"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" graph --workspace "$tmp/context-workspace" > "$tmp/context-workspace-unowned-graph.log"
+grep -Fxq '{"teamOwned":true}' "$tmp/context-workspace/docs/ai-context-graph.json"
+grep -Fq 'skip existing non-ai-context-kit file' "$tmp/context-workspace-unowned-graph.log"
 mkdir -p "$tmp/ab-audit/docs/real-task-ab"
 printf '%s\n' \
   '# Backend bug A/B' \
@@ -803,6 +965,8 @@ grep -Fq 'updateElectricBoatStatus' "$tmp/codex-mem-alias-search.md"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem install-hooks --workspace "$tmp/context-workspace" --mode observe >/dev/null
 test -s "$tmp/context-workspace/.codex/hooks.json"
 test -s "$tmp/context-workspace/.codex/hooks/codex-mem-hook.mjs"
+grep -Fq '"_generatedBy": "ai-context-kit codex-mem"' "$tmp/context-workspace/.codex/hooks.json"
+grep -Fq '// generated-by: ai-context-kit' "$tmp/context-workspace/.codex/hooks/codex-mem-hook.mjs"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem install-user-hooks --workspace "$tmp/context-workspace" --mode observe --codex-home "$tmp/codex-home" >/dev/null
 test -s "$tmp/codex-home/hooks.json"
 grep -Fq -- "--scope" "$tmp/codex-home/hooks.json"
@@ -839,11 +1003,16 @@ cat > "$tmp/context-workspace/docs/ai-context-token-savings-measurement.md" <<'E
 | `app` | 5,000 | 500 | 节省 95.00% | 节省 90.00% | 50 | 节省 99.50% | 节省 99.00% |
 EOF
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" dashboard --workspace "$tmp/context-workspace" >/dev/null
+grep -Fq '<!-- generated-by: ai-context-kit -->' "$tmp/context-workspace/docs/ai-context-token-dashboard.md"
+printf '# Team-owned token dashboard\n' > "$tmp/context-workspace/docs/ai-context-token-dashboard.md"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" dashboard --workspace "$tmp/context-workspace" > "$tmp/context-workspace-unowned-dashboard.log"
+grep -Fxq '# Team-owned token dashboard' "$tmp/context-workspace/docs/ai-context-token-dashboard.md"
+grep -Fq 'skip existing non-ai-context-kit file' "$tmp/context-workspace-unowned-dashboard.log"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" token-status --workspace "$tmp/context-workspace" > "$tmp/token-status.md"
 grep -Fq 'routing context: 100 tokens (节省 99.00%)' "$tmp/token-status.md"
 grep -Fq 'current session tool output estimate: 300 tokens' "$tmp/token-status.md"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" token-status --workspace "$tmp/context-workspace" --json --output "$tmp/context-workspace/docs/ai-context-token-status.json" >/dev/null
-node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); if(data.generatedBy!=="ai-context-kit 0.3.55") process.exit(1); if(data.workspace!==".") process.exit(1); if(data.staticContext.routingTokens!==100) process.exit(1); if(data.hookObserve.currentSession.outputTokens!==300) process.exit(1); if(!data.reports.staticDashboard.exists) process.exit(1); if(data.reports.staticDashboard.path!=="docs/ai-context-token-dashboard.md") process.exit(1);' "$tmp/context-workspace/docs/ai-context-token-status.json"
+node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); if(data.generatedBy!==`ai-context-kit ${process.argv[2]}`) process.exit(1); if(data.workspace!==".") process.exit(1); if(data.staticContext.routingTokens!==100) process.exit(1); if(data.hookObserve.currentSession.outputTokens!==300) process.exit(1); if(!data.reports.staticDashboard.exists) process.exit(1); if(data.reports.staticDashboard.path!=="docs/ai-context-token-dashboard.md") process.exit(1);' "$tmp/context-workspace/docs/ai-context-token-status.json" "$canonical_version"
 (cd "$tmp" && "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" token-status --workspace "$tmp/context-workspace" --json --output docs/ai-context-token-status-relative.json >/dev/null)
 test -s "$tmp/context-workspace/docs/ai-context-token-status-relative.json"
 test ! -e "$tmp/docs/ai-context-token-status-relative.json"
@@ -955,6 +1124,7 @@ node -e 'const fs=require("fs"); const file=process.argv[1]; const events=fs.rea
 test -s "$tmp/context-workspace/.codex-mem/ledger.jsonl"
 "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" codex-mem dashboard --workspace "$tmp/context-workspace" >/dev/null
 test -s "$tmp/context-workspace/docs/codex-mem-dashboard.md"
+grep -Fq '<!-- generated-by: ai-context-kit -->' "$tmp/context-workspace/docs/codex-mem-dashboard.md"
 grep -Fq '已写入 refs 的事件' "$tmp/context-workspace/docs/codex-mem-dashboard.md"
 mkdir -p "$tmp/codex-home/sessions/2026/06/06"
 printf '%s\n' \

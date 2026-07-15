@@ -1,6 +1,6 @@
 # ai-context-kit 当前状态与待办
 
-整理日期：2026-06-08
+整理日期：2026-07-15
 
 ## 资料来源
 
@@ -32,23 +32,24 @@
 ### 项目事实与安装
 
 - `scripts/install-project-facts.sh` 支持完整模板和 `--lite` 模式。
-- 安装脚本不覆盖已有 `project-facts/`、已有 helper 脚本和已有 skill 目录。
+- 安装脚本不覆盖已有 `project-facts/`、已有 helper 脚本和已有 skill 目录；helper 只在显式使用 `--with-helper-scripts` 时安装。
 - `scripts/sync-skills.sh` 支持同步项目内 skill，但不覆盖已有 `AGENTS.md` 和已有 skill。
 - 模板包含项目摘要、术语、当前计划、规格、变更、决策、交接和 GitHub 规则片段。
 
 ### 多仓库上下文生成
 
+- `ai-context-kit inspect` 零写入识别仓库、已有规范和 workflow artifact 状态，并支持相对路径 JSON 输出。
 - `ai-context-kit doctor` 检查目标 workspace。
 - `ai-context-kit init` 生成父目录 `AGENTS.md`、`docs/ai-context-workspace-map.md`、`docs/ai-context-api-contract-map.md`，并为子仓库生成短 `AGENTS.md` 和轻量 `project-facts/`。
 - `facts` 只生成子仓库 `project-facts/`。
 - `agents` / `repair` 按当前 workspace 缺失项生成 workflow artifacts；只有 AGENTS 缺失时只写 AGENTS，docs、project-facts 或 `.codex-mem/index.jsonl` 缺失时也会生成对应材料。
-- 生成文件默认不覆盖非 generated 项目事实。
+- 默认路径下的生成 Markdown、JSON、JSONL、hook 脚本和 `.gitignore` 使用各自的 ownership marker。固定文件名且匹配严格历史签名的旧生成 Markdown 允许升级并补写 marker；其他无标记同名文件不会被 `--force` 或 `upgrade` 覆盖。显式 `--output` 由调用者确认目标路径。
 - 生成内容会排除敏感配置、高 token 构建产物、依赖目录、UI 库、监控插件、SQL 目录和 VM 模板等常见高噪声路径。
 
 ### Token 测量与看板
 
 - `measure` 生成 `docs/ai-context-scope-report.md`。
-- `tokens` 通过 `repomix@latest` 生成 token 测量报告。
+- `tokens` 通过固定的 `repomix@1.16.1` 生成 token 测量报告，并保留 Repomix 默认安全扫描。
 - `summary` 从最新 token 报告打印摘要。
 - `dashboard` 从 token 报告生成 `docs/ai-context-token-dashboard.md`。
 - 小仓库可能出现索引大于源码的情况，文档已明确不能把节省当固定结果。
@@ -145,6 +146,7 @@
 - v0.3.53 增加 `onboard` 和 `upgrade` 聚合命令：`onboard` 生成缺失的工作流材料后输出 `doctor` 和 `token-status`，`upgrade` 刷新生成资料后输出同样状态；`editor-tasks` 同步增加 `ai-context: onboard workspace` 与 `ai-context: upgrade workspace context`，给 Agent、编辑器任务和 Codex plugin 做普通用户无感入口。
 - v0.3.54 增加 `automation-prompt`：输出业务项目每日 Skill 反哺候选 prompt 和 Skill 仓库评审 prompt。业务候选 prompt 支持从当前 workspace 或业务父目录自动识别子仓库，归属冲突时列待确认项；该命令只生成提示词，不创建 automation，也不修改共享 Skill。
 - v0.3.55 增加 `capability actions`：`onboard` 和 `upgrade` 在 `doctor`、`token-status` 后继续输出 CodeGraph 状态、静态 token 报告/dashboard 状态、observe hooks、session usage 和下一步命令。两个 Skill 同步要求首次接入和已接入升级的最终报告必须呈现这些状态。
+- v0.3.60 统一根包、CLI 包和两个 Plugin manifest 的版本；增加零写入 `inspect`；helper 改为显式安装；生成文件增加 ownership guard；Repomix 固定为 `1.16.1` 并恢复默认安全扫描；根 `skills/` 成为两个 Plugin Skill 副本的单一来源。
 - `check-kit.sh` 会在本机存在 `codex mcp` 时使用临时 `CODEX_HOME` 注册 `codexMem`，并通过 `codex mcp list/get --json` 检查 stdio server 配置。
 - `codex exec` 真实会话已能调用 `codexMem/codex_mem_search`。v0.3.15 复测结果：MCP tool call completed，模型看到空结果；空结果原因是当时 project-facts-kit 本身未初始化 `.codex-mem/index.jsonl`。
 - 临时 workspace 非空索引复测已通过：创建含 `codex-mem-real-search-marker` 的 AGENTS.md，运行 `codex-mem init` 后，真实 `codex exec` 调用 `codex_mem_search` 返回 `AGENTS.md` 命中；CLI 显示 `tokens used 20,002`。
@@ -185,7 +187,7 @@
 - `bash -n scripts/check-kit.sh`
 - `./scripts/check-kit.sh`
 - `git diff --check`
-- `packages/ai-context-kit/bin/ai-context-kit.mjs --version` 返回 `ai-context-kit 0.3.55`
+- `packages/ai-context-kit/bin/ai-context-kit.mjs --version` 返回 `ai-context-kit 0.3.60`
 - KT 真实 `contracts --query` 查询确认租赁下单页和归还页相关接口能被提示。
 - KT `.codex-mem/index.jsonl` 已用 v0.3.28 重新生成，仍为 `576` 行，`api-contract` entries 带 `contract.backendRepo` 和 `relatedRepos`。
 - KT 本地 CLI/MCP route/search 纯中文查询已验证；真实 `codex exec` 在 v0.3.26 使用 `approval_mode="approve"` 时已成功调用 `codex_mem_route`。截至 2026-06-08，外部 KT 工作区三类真实任务 A/B 记录已补齐；本仓库发布证据仍以 `docs/ai-context-kit-real-task-ab-audit.md` 为准，当前为 0 条计入。业务运行时验证仍未执行。

@@ -230,6 +230,9 @@ if [[ "$install_skills" -eq 1 ]]; then
 fi
 
 printf '%s\n' 'Project Facts Kit local setup completed.'
+printf '%s\n' 'CLI quick start:'
+printf '%s\n' '  not adopted: ~/.cache/project-facts-kit/scripts/install-project-facts.sh . --lite && ai-context-kit onboard -w .'
+printf '%s\n' '  adopted:     ai-context-kit upgrade -w .'
 printf '%s\n' 'Open the target project workspace, then use one of:'
 printf '%s\n' '帮我做项目事实 kit 首次接入。'
 printf '%s\n' '帮我做项目事实 kit 已接入升级，不覆盖已有事实。'
