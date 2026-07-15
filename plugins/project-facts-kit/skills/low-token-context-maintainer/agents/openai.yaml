@@ -1,7 +1,7 @@
 interface:
   display_name: "Low Token Context"
-  short_description: "Inspect and route before source reads"
-  default_prompt: "Use $low-token-context-maintainer to inspect existing workspace standards without source scanning, route to the relevant repository, and keep source reads within a low-token path."
+  short_description: "Route ambiguous workspaces and keep local fixes lean"
+  default_prompt: "Use $low-token-context-maintainer to choose the lightest safe context path for this workspace task."
 
 policy:
   allow_implicit_invocation: true
