@@ -559,6 +559,7 @@ Phase A 已应用：统一 `0.3.60` 版本与现有命令文档；新增浅层�
 - Plugin Skill mirror check、YAML 解析和本地 Markdown 链接扫描：Pass。
 - `skills-ref validate` 和 `quick_validate.py`：两个根 Skill 均 Pass。
 - `validate_plugin.py`：两个 Plugin 均 Pass。
+- GitHub PR：[#2](https://github.com/xiaoliuzhuan666/project-facts-kit/pull/2) 已合入 `main`，merge commit `8d4869f`。
 - GitHub Actions hosted run、npm publish/install、live Repomix measurement、真实业务项目接入、真实任务 A/B：Not run。
 
 ## 14. 官方资料
