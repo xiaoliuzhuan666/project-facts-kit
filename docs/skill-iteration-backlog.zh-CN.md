@@ -48,7 +48,7 @@
 | --- | --- | --- | --- | --- | --- |
 | `SFC-20260715-universal-low-intrusion-phase-a` | 用户在调研后明确要求开始迭代 | 候选文件、调研报告、CLI、安装脚本、Plugin、Skill、CI 模板和检查脚本 | CLI/Bash 语法、`check-kit.sh`、`git diff --check`、两个 Skill 和两个 Plugin 校验均通过 | 通用工作流与工具链；不含业务规则、CodeGraph/RAG/memory 实现 | User acting as Tool/library owner，Accepted 2026-07-15 |
 
-可进入 PR 的项：当前 Phase A 工作区改动。没有仅处于 `accepted` 且尚未实现的候选。
+已进入 PR 的项：Phase A 已通过 [PR #2](https://github.com/xiaoliuzhuan666/project-facts-kit/pull/2) 合入 `main`，merge commit 为 `8d4869f`。没有仅处于 `accepted` 且尚未实现的候选。
 
 需要补证据的项：`SFC-20260623-multistep-form-return-state` 仍缺 Tool/library owner 决定，完整真实下单返回链路仍为 `Not run`；保持 `proposed`。
 
@@ -135,7 +135,7 @@
 
 | 日期 | 候选项 | 结果 | 评审摘要 | 下一步 |
 | --- | --- | --- | --- | --- |
-| 2026-07-15 | `SFC-20260715-universal-low-intrusion-phase-a` | `applied` | 用户以 Tool/library owner 身份接受 Phase A；通用 CLI、安装边界、Plugin 分发、生成文件 ownership 和 Repomix 安全配置已实施并通过检查。 | 提交 PR 审阅；动态路由、更多语言 provider、CodeGraph/RAG/memory 保持独立研究项。 |
+| 2026-07-15 | `SFC-20260715-universal-low-intrusion-phase-a` | `applied` | 用户以 Tool/library owner 身份接受 Phase A；通用 CLI、安装边界、Plugin 分发、生成文件 ownership 和 Repomix 安全配置已实施并通过检查，PR #2 已合入 `main`。 | 动态路由、更多语言 provider、CodeGraph/RAG/memory 保持独立研究项。 |
 | 2026-07-14 | 全部候选 | 状态不变 | 自上次运行后没有新增或修改候选文件，也没有新的 Tool/library owner 记录。2 个候选的来源、证据、验证、适用范围和 reviewer 字段均已复核。 | `SFC-20260623-multistep-form-return-state` 等 owner 决定；通过前不改正式 Skill 或工具。 |
 | 2026-07-13 | `SFC-20260623-multistep-form-return-state` | `proposed` | 候选有真实来源和可查证据；`../崆峒/kt-travel-lite-web/project-facts/verification.md` 记录 build 通过、入口页浏览器检查、完整真实链路未验证、lint 失败来自历史债务。没有 Tool/library owner 接受记录。 | 等 Tool/library owner 审阅；通过前不改 `skills/`、`template/`、`scripts/` 或 CLI。 |
 | 2026-07-13 | `SFC-20260618-daily-change-inventory` | `applied` | 候选文件记录 user 作为 Tool/library owner 接受；提交 `d89efa1` 和当前 Skill、CLI prompt、文档内容可确认已应用。 | 无需动作。 |
