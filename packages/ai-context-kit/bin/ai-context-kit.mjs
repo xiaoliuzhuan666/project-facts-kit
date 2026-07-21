@@ -6010,6 +6010,7 @@ ${repoHints}
 - Review 初始保持 Pending。
 - 没有候选时，不创建候选文件；在最终报告说明读取了哪些入口、为什么没有候选。
 - 不要把本机绝对路径写进候选文件；需要路径时使用仓库相对路径。
+- 候选文件和运行记录写入后，当天完成 git add 和 git commit；未提交的候选视为未交付。
 
 结束时汇报：识别到的目标仓库、创建或更新的候选文件、needs-evidence 项、未运行的验证、需要人工确认的归属冲突。`;
 }
@@ -6025,6 +6026,7 @@ function renderSkillFeedbackReviewAutomationPrompt() {
 3. 没有 Tool/library owner 审阅记录时，不要标 accepted；只能保持 proposed 或 needs-evidence。
 4. 项目专属业务规则不进入共享 Skill，标 rejected 或要求留在目标项目 project-facts。
 5. 只有 accepted 且证据充分的候选，才建议后续 PR 修改 skills/、template/、scripts/ 或 packages/ai-context-kit/。
+6. 检查 proposed 候选年龄：SFC ID 中的日期距今超过 14 天且仍无 Tool/library owner 结论的，在评审输出中置顶提醒；超过 30 天且证据已不可复现的，建议降为 needs-evidence 或 rejected 并写明原因。
 
 输出规则：
 - 可以更新 docs/skill-iteration-backlog.zh-CN.md 的状态、证据摘要和下一步建议。
