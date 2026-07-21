@@ -46,18 +46,22 @@ RULES_TO_LINK=(
   ".clinerules"
 )
 
-# 在 $TARGET_DIR 下创建指向 AGENTS.md 的软链接
-for rule_file in "${RULES_TO_LINK[@]}"; do
-  dest_path="$TARGET_DIR/$rule_file"
-  if [[ -L "$dest_path" ]]; then
-    printf 'Symlink %s already exists. Skipping.\n' "$rule_file"
-  elif [[ -f "$dest_path" ]]; then
-    printf 'Warning: A regular file %s already exists. Not overwriting it.\n' "$rule_file"
-  else
-    printf 'Creating symlink %s -> AGENTS.md...\n' "$rule_file"
-    ln -s "AGENTS.md" "$dest_path"
-  fi
-done
+# 在 $TARGET_DIR 下创建指向 AGENTS.md 的软链接；AGENTS.md 不存在时跳过，避免产生悬空软链
+if [[ -f "$AGENTS_FILE" ]]; then
+  for rule_file in "${RULES_TO_LINK[@]}"; do
+    dest_path="$TARGET_DIR/$rule_file"
+    if [[ -L "$dest_path" ]]; then
+      printf 'Symlink %s already exists. Skipping.\n' "$rule_file"
+    elif [[ -f "$dest_path" ]]; then
+      printf 'Warning: A regular file %s already exists. Not overwriting it.\n' "$rule_file"
+    else
+      printf 'Creating symlink %s -> AGENTS.md...\n' "$rule_file"
+      ln -s "AGENTS.md" "$dest_path"
+    fi
+  done
+else
+  printf 'No AGENTS.md found in %s. Skipping rules symlinks (%s) to avoid dangling links.\n' "$TARGET_DIR" "${RULES_TO_LINK[*]}"
+fi
 
 # 3. 为 Codex 等工具同步本地的 Skill
 # 假设本地团队的 Skill 保存在 project-facts/skills/
