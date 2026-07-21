@@ -11,7 +11,7 @@
 处理涉及用户行为、接口、数据、权限或发布结果的任务时，遵守以下工作流：
 
 1. **大纲优先**：先读取 `project-facts/repo_map.txt`（如果存在），作为仓库符号、类与文件搜索的大纲。根据任务只读取关联代码与 specs，不把 repo map 当成批准需求。
-2. **读取事实顺序**：按顺序读取 `project-facts/README.md`、`project-facts/project.md`、`project-facts/iteration-plan.md`、相关业务域的 `specs/`、`decisions/` 以及 `handover/current.md`。
+2. **读取事实顺序**：按顺序读取 `project-facts/README.md`、`project-facts/project.md`、`project-facts/glossary.md`、`project-facts/runtime.md`、`project-facts/iteration-plan.md`、相关业务域的 `specs/`、`decisions/` 以及 `handover/current.md`。
 3. **状态表输出**：接手或评估项目时，输出 Markdown 状态表，字段包含：行为或需求、状态、来源、最近验证、备注或未知项。来源必须包含文件路径；能定位到具体行时写行号。
 4. **无来源归为 UNKNOWN**：没有明确批准依据（A 类证据如审阅规格、ADR、Owner 确认）时，状态不得记为 `APPROVED`。无法找到文件支撑的意图，记为 `UNKNOWN`。
 5. **变更记录**：修改业务行为前，在 `project-facts/changes/<date>-<change>/` 中记录目的、非目标、受影响要求、未知项和验证方式。

@@ -9,7 +9,7 @@
 培训结束后，每位成员应能完成四件事：
 
 1. 从仓库资料判断项目目标、当前任务、已验证内容和待确认内容。
-2. 把 AI 输出分成 `APPROVED`、`OBSERVED`、`UNKNOWN`、`CONFLICT`，并给出来源路径。
+2. 把 AI 输出分成 `APPROVED`、`OBSERVED`、`UNKNOWN`、`CONFLICT`、`DEPRECATED`，并给出来源路径。
 3. 从 `project-facts/iteration-plan.md` 领取或继续一个任务。
 4. 完成阶段工作后更新 `evidence.md`、`handover/current.md`、`handover/for-next-maintainer.md` 和 `iteration-plan.md`。
 
@@ -33,7 +33,7 @@
 
 | 时间 | 内容 | 产出 |
 | --- | --- | --- |
-| 0-15 分钟 | 说明项目事实制度和四种状态 | 成员理解 AI 不能批准业务需求 |
+| 0-15 分钟 | 说明项目事实制度和五种状态 | 成员理解 AI 不能批准业务需求 |
 | 15-35 分钟 | 用样板项目做接手阅读 | 每人产出一张状态表 |
 | 35-55 分钟 | 从 `iteration-plan.md` 选择任务 | 每个任务关联 owner、来源、验证命令 |
 | 55-75 分钟 | 演练一次中途交接 | 更新 handover 和任务状态 |
@@ -73,7 +73,7 @@ rg --files -g 'AGENTS.md' -g 'project-facts/**' | sed -n '1,160p'
 
 | 项 | 状态 | 来源 | 最近验证 | 下一步 |
 | --- | --- | --- | --- | --- |
-| `<requirement or behavior>` | `APPROVED / OBSERVED / UNKNOWN / CONFLICT` | `<path>` | `<result>` | `<action>` |
+| `<requirement or behavior>` | `APPROVED / OBSERVED / UNKNOWN / CONFLICT / DEPRECATED` | `<path>` | `<result>` | `<action>` |
 
 只有当任务行里有 owner、来源、验证命令，并且高影响未知项已有处理方式时，才继续开发。
 

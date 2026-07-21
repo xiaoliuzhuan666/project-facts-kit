@@ -10,7 +10,10 @@ jobs:
     permissions:
       contents: read
     env:
-      AI_CONTEXT_KIT_PACKAGE: ai-context-kit@0.3.60
+      # expected ai-context-kit version: 0.3.60
+      # npm 上的 ai-context-kit 包名被无关第三方占用，CLI 只能从 GitHub 源码安装。
+      PROJECT_FACTS_KIT_REPO: https://github.com/xiaoliuzhuan666/project-facts-kit.git
+      PROJECT_FACTS_KIT_BRANCH: ${{ vars.PROJECT_FACTS_KIT_BRANCH || 'main' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,7 +24,12 @@ jobs:
           node-version: "20"
 
       - name: Install ai-context-kit
-        run: npm install --global "$AI_CONTEXT_KIT_PACKAGE"
+        run: |
+          git clone --depth 1 --branch "$PROJECT_FACTS_KIT_BRANCH" "$PROJECT_FACTS_KIT_REPO" /tmp/project-facts-kit
+          npm install --global /tmp/project-facts-kit/packages/ai-context-kit
+
+      - name: Print ai-context-kit version
+        run: ai-context-kit --version
 
       - name: Inspect workspace without writes
         run: ai-context-kit inspect --workspace . --json > /tmp/ai-context-inspect.json

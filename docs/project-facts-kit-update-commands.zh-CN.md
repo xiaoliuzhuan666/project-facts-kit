@@ -260,7 +260,7 @@ git diff --check
 node --check packages/ai-context-kit/bin/ai-context-kit.mjs
 skills-ref validate skills/project-facts-maintainer
 skills-ref validate skills/low-token-context-maintainer
-python3 /Users/xiaoliuzhuan/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/project-facts-kit-codex
+python3 "$HOME/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py" plugins/project-facts-kit-codex
 ```
 
-如果本机没有 `skills-ref` 或 Codex plugin 校验脚本，要在交付说明里写明未验证。
+最后一条是本机 plugin-creator 工具的示例路径。如果本机没有 `skills-ref` 或 Codex plugin 校验脚本，跳过对应校验，并在交付说明里写明未验证。
