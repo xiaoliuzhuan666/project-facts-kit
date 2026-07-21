@@ -93,13 +93,25 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 检查 proposed 候选年龄：SFC ID 中的日期距今超过 14 天且仍无 Tool/library owner 结论的，在评审输出中置顶提醒；超过 30 天且证据已不可复现的，建议降为 needs-evidence 或 rejected 并写明原因。
 ```
 
+## 分层评审
+
+2026-07-21 起，反哺改动按影响范围分三层，owner 的显式批准只保留给高风险层：
+
+| 层 | 范围 | 生效方式 |
+| --- | --- | --- |
+| 项目本地层 | 目标项目自己的 `project-facts/`、`AGENTS.md`、项目级规则 | 零评审，立即生效；项目专属规则永不进入共享层 |
+| 共享低风险层 | 文档措辞、提示词文案、新增 reference 小节、backlog 登记 | `check-kit.sh` 与 `git diff --check` 通过，PR 开放 7 天无 owner 反对即可合并；owner 显式批准可立即合并 |
+| 共享高风险层 | Skill 工作流规则、模板结构、CLI 行为、制度正文 | 必须 Tool/library owner 显式批准，且完成全部检查 |
+
+低风险层试行一个月后回顾：若出现不合适的自动通过，把对应类别上调到高风险层。
+
 ## PR 合并门槛
 
 修改 `skills/`、`template/`、`scripts/` 或本制度正文时，PR 至少满足：
 
 - 链接 `docs/skill-feedback/` 候选文件或 `docs/skill-iteration-backlog.zh-CN.md` 对应行。
 - 说明候选来自哪个真实任务，以及验证是否执行。
-- Tool/library owner 审阅通过。
+- Tool/library owner 审阅通过（共享低风险层可由 7 天异议窗口替代，见分层评审）。
 - `./scripts/check-kit.sh` 通过。
 - `git diff --check` 通过。
 - 若修改了 Skill，并且本机有 Agent Skills 校验工具，运行该工具；没有工具时在 PR 或交付说明写明未验证。
