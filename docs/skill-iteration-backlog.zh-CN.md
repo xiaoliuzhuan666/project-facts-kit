@@ -87,6 +87,8 @@
 | `<SFC-YYYYMMDD-name>` | `<project-facts/skill-feedback/...>` | `<improve_skill/new_skill/tooling_fix>` | `proposed` | `<fill>` |
 | `SFC-20260623-multistep-form-return-state` | `docs/skill-feedback/2026-06-23-multistep-form-return-state.md` | `improve_skill` | `proposed` | 2026-07-14 复核：真实任务、证据路径、验证结果和适用范围已记录；Reviewer 仍为 Pending，不能标为 `accepted`。具体路由、字段和 `advancePreDays` 留在目标项目事实。 |
 | `SFC-20260715-universal-low-intrusion-phase-a` | `docs/skill-feedback/2026-07-15-universal-low-intrusion-phase-a.md` | `tooling_fix` | `applied` | 2026-07-15 已完成 Phase A 修改；CLI/Bash、资料库、Skill 和 Plugin 检查通过。 |
+| `SFC-20260717-evidence-first-cross-runtime-ui-debugging` | `docs/skill-feedback/2026-07-17-evidence-first-cross-runtime-ui-debugging.md` | `improve_skill` | `proposed` | 2026-07-17 登记：建议在 `project-facts-maintainer` 的 `Lightweight Change Evidence` 后增加跨运行时 UI 数据检查点规则；Reviewer decision 为 `Pending`，保持 `proposed`。“游园体验”、板块 ID、商品字段名和页面路径留在目标项目。 |
+| `SFC-20260720-token-budgeted-context-router` | `docs/skill-feedback/2026-07-20-token-budgeted-context-router.md` | `tooling_fix` | `proposed` | 2026-07-20 登记：query-aware、带硬 token 上限的 `context` 命令（7-15 调研阶段 C、7-20 交叉验证 §5）；Reviewer decision 为 `Pending`，保持 `proposed`。实现前提：至少 1 条 counted 真实任务 A/B，且单独 PR 实施。 |
 
 ## 已优化到 skill 的项目
 
@@ -135,7 +137,9 @@
 
 | 日期 | 候选项 | 结果 | 评审摘要 | 下一步 |
 | --- | --- | --- | --- | --- |
+| 2026-07-15 | 全部候选 | 状态不变 | 本次自动化复核 3 个候选：2 个 `applied` 均有 owner 记录和对应合入提交；`SFC-20260623-multistep-form-return-state` 的任务文件与验证记录仍可读，但完整返回链路仍为 `Not run`，Reviewer 仍为 Pending。 | 等 Tool/library owner 决定并补充真实返回链路验证；通过前不改正式 Skill 或工具。 |
 | 2026-07-15 | `SFC-20260715-universal-low-intrusion-phase-a` | `applied` | 用户以 Tool/library owner 身份接受 Phase A；通用 CLI、安装边界、Plugin 分发、生成文件 ownership 和 Repomix 安全配置已实施并通过检查，PR #2 已合入 `main`。 | 动态路由、更多语言 provider、CodeGraph/RAG/memory 保持独立研究项。 |
+| 2026-07-15 | `SFC-20260715-fast-local-fix-context-budget` | `accepted` | 用户以 Tool/library owner 身份于 2026-07-15 接受，要求进入上游实施；`low-token-context-maintainer` 快速本地修复路径已在分支 `codex/low-token-fast-local-path` 实施：先选模式再读取、快速本地路径限 3-4 次源码读取、小型本地 UI 修改不更新项目事实、显式升级信号，跨仓、全工作区和 token/CLI 细节移入三个一层 reference，两个 Plugin 镜像已由同步生成；`./scripts/check-kit.sh`（用户级 CLI-link 兜底）、`git diff --check`、Plugin 镜像检查、`skills-ref validate` 和 `quick_validate.py` 均通过。候选在分支评审合入前保持 `accepted`。 | 分支 `codex/low-token-fast-local-path` 评审合入后转为 `applied`；真实项目接入、升级、token 测量和 hosted GitHub Actions 仍为 `Not run`。 |
 | 2026-07-14 | 全部候选 | 状态不变 | 自上次运行后没有新增或修改候选文件，也没有新的 Tool/library owner 记录。2 个候选的来源、证据、验证、适用范围和 reviewer 字段均已复核。 | `SFC-20260623-multistep-form-return-state` 等 owner 决定；通过前不改正式 Skill 或工具。 |
 | 2026-07-13 | `SFC-20260623-multistep-form-return-state` | `proposed` | 候选有真实来源和可查证据；`../崆峒/kt-travel-lite-web/project-facts/verification.md` 记录 build 通过、入口页浏览器检查、完整真实链路未验证、lint 失败来自历史债务。没有 Tool/library owner 接受记录。 | 等 Tool/library owner 审阅；通过前不改 `skills/`、`template/`、`scripts/` 或 CLI。 |
 | 2026-07-13 | `SFC-20260618-daily-change-inventory` | `applied` | 候选文件记录 user 作为 Tool/library owner 接受；提交 `d89efa1` 和当前 Skill、CLI prompt、文档内容可确认已应用。 | 无需动作。 |

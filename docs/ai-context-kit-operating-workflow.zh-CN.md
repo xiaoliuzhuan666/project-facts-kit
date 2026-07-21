@@ -4,6 +4,8 @@
 
 这份文档只保留日常任务默认要用的流程。其他能力先作为候选工具，不放进默认动作。
 
+> **入口说明**：日常统一入口以 `README.md` 和 `docs/project-facts-kit-update-commands.zh-CN.md` 为准——未接入项目执行 `install-project-facts.sh . --lite && ai-context-kit onboard -w .`，已接入项目执行 `ai-context-kit upgrade -w .`。本文档保留为底层排障与手工操作流程。
+
 ## 核心目标
 
 - 先判断应该读哪个仓库和哪些文件。

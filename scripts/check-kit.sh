@@ -50,6 +50,7 @@ required_files=(
   "template/project-facts/handover/for-next-maintainer.md"
   "template/github/workflows/ai-context-kit-context-check.yml"
   "docs/team-training-iteration-runbook.zh-CN.md"
+  "scripts/ai-context-kit.sh"
   "scripts/generate-repo-map.sh"
   "scripts/setup-local-kit.sh"
   "scripts/sync-plugin-skills.sh"
@@ -79,6 +80,19 @@ for path in "${required_files[@]}"; do
   fi
 done
 
+shell_scripts=(
+  "scripts/ai-context-kit.sh"
+  "scripts/check-kit.sh"
+  "scripts/generate-repo-map.sh"
+  "scripts/install-project-facts.sh"
+  "scripts/setup-local-kit.sh"
+  "scripts/sync-plugin-skills.sh"
+  "scripts/sync-skills.sh"
+)
+for path in "${shell_scripts[@]}"; do
+  bash -n "$repo_root/$path"
+done
+
 canonical_version="$(node -p 'require(process.argv[1]).version' "$repo_root/packages/ai-context-kit/package.json")"
 root_version="$(node -p 'require(process.argv[1]).version' "$repo_root/package.json")"
 marketplace_plugin_version="$(node -p 'require(process.argv[1]).version' "$repo_root/plugins/project-facts-kit/.codex-plugin/plugin.json")"
@@ -94,21 +108,25 @@ grep -Fq 'not adopted: ~/.cache/project-facts-kit/scripts/install-project-facts.
 grep -Fq 'adopted:     ai-context-kit upgrade -w .' "$repo_root/scripts/setup-local-kit.sh"
 grep -Fq 'install-project-facts.sh . --lite && ai-context-kit onboard -w .' "$repo_root/README.md"
 grep -Fq 'ai-context-kit upgrade -w .' "$repo_root/README.md"
-grep -Fq "AI_CONTEXT_KIT_PACKAGE: ai-context-kit@$canonical_version" "$repo_root/template/github/workflows/ai-context-kit-context-check.yml"
+grep -Fq "expected ai-context-kit version: $canonical_version" "$repo_root/template/github/workflows/ai-context-kit-context-check.yml"
 grep -Fq 'const REPOMIX_PACKAGE = "repomix@1.16.1";' "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs"
-if rg -n -- 'repomix@latest|--no-security-check' "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs"; then
-  printf 'CLI still uses a floating Repomix version or disables its security check.\n' >&2
-  exit 1
-fi
-if rg -n 'ai-context-kit (install|quickstart|audit|status)\b|--inject-package-scripts|--with-ci|--fail-on-warning' \
-  "$repo_root/README.md" \
-  "$repo_root/docs/adoption-guide.zh-CN.md" \
-  "$repo_root/docs/project-facts-kit-update-commands.zh-CN.md" \
-  "$repo_root/packages/ai-context-kit/README.md" \
-  "$repo_root/skills" \
-  "$repo_root/template"; then
-  printf 'Current usage docs, skills or templates reference an unimplemented CLI contract.\n' >&2
-  exit 1
+if command -v rg >/dev/null 2>&1; then
+  if rg -n -- 'repomix@latest|--no-security-check' "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs"; then
+    printf 'CLI still uses a floating Repomix version or disables its security check.\n' >&2
+    exit 1
+  fi
+  if rg -n 'ai-context-kit (install|quickstart|audit|status)\b|--inject-package-scripts|--with-ci|--fail-on-warning' \
+    "$repo_root/README.md" \
+    "$repo_root/docs/adoption-guide.zh-CN.md" \
+    "$repo_root/docs/project-facts-kit-update-commands.zh-CN.md" \
+    "$repo_root/packages/ai-context-kit/README.md" \
+    "$repo_root/skills" \
+    "$repo_root/template"; then
+    printf 'Current usage docs, skills or templates reference an unimplemented CLI contract.\n' >&2
+    exit 1
+  fi
+else
+  printf 'rg not found; skipping the Repomix floating-version/security-check scan and the unimplemented CLI contract scan.\n' >&2
 fi
 
 (

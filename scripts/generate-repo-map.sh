@@ -41,8 +41,15 @@ printf '=== Generating Repo Map for %s ===\n' "$TARGET_DIR"
 
   printf '\n## Key Code Symbols\n'
 
+  # 探测 ctags 是否为 Universal Ctags：macOS 自带的 /usr/bin/ctags 是 BSD 版，
+  # 不支持 --fields=+n --excmd=number 等长选项，走 ctags 分支只会产出空符号节。
+  ctags_supports_required_options() {
+    command -v ctags >/dev/null 2>&1 || return 1
+    ctags --version 2>/dev/null | grep -qi 'Universal Ctags'
+  }
+
   # 优先采用 ctags 提取符号大纲
-  if command -v ctags >/dev/null 2>&1; then
+  if ctags_supports_required_options; then
     printf '# Using ctags to extract key symbols...\n'
     # 查找主要的代码文件
     find "$TARGET_DIR" -type f \
@@ -57,7 +64,7 @@ printf '=== Generating Repo Map for %s ===\n' "$TARGET_DIR"
       | awk '{print $1 " (" $4 ":" $3 ")"}' \
       || printf 'Ctags extraction completed with warnings.\n'
   else
-    printf '# [Notice] ctags not found on system. Falling back to key files list.\n'
+    printf '# [Notice] Universal Ctags not found on system. Falling back to key files list.\n'
     printf "# To get rich symbol indexes, please install universal-ctags (e.g. 'brew install universal-ctags').\n\n"
     # 列出关键代码文件
     find "$TARGET_DIR" -type f \

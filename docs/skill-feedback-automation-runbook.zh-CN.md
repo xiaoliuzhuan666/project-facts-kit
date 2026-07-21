@@ -149,7 +149,7 @@ Agent 有 Codex app automation 能力时，按当前打开目录创建或更新 
 
 自动任务的产物仍需要走 Git diff、PR、CODEOWNERS 和检查命令。它可以让候选和评审材料定期出现，但不能让 AI 绕过审阅直接改变共享规则。
 
-当前本机已经存在一条 Skill 仓库评审 cron automation，id 是 `skill`，工作日 19:00 触发，cwd 指向本仓库。业务项目的 daily candidate automation 需要在业务项目或业务父目录中创建；创建后由 prompt 自动识别子仓库。
+本机示例：一台维护机上已创建一条 Skill 仓库评审 cron automation，id 为 `skill`，工作日 19:00 触发，cwd 指向本仓库；这只是单机示例，不代表其他机器的状态。业务项目的 daily candidate automation 需要在业务项目或业务父目录中创建；创建后由 prompt 自动识别子仓库。
 
 ## 失败处理
 

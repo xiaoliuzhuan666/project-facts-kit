@@ -27,7 +27,9 @@ Use an existing specification structure when one is already present. Otherwise c
 project-facts/
   project.md
   glossary.md
+  runtime.md
   iteration-plan.md
+  skill-feedback/_template.md
   specs/<domain>/spec.md
   changes/<yyyy-mm-dd>-<change>/
     proposal.md

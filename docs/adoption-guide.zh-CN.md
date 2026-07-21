@@ -341,6 +341,8 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 
 不强制安装 OpenSpec CLI；项目若已使用它，应继续按其官方流程维护并额外执行团队审阅要求。
 
+OpenSpec v1.6 起的 Stores（beta，2026-07-20 核查官方仓库）允许把 specs/changes 放在独立仓库跨项目共享。采用时共享仓库仍只是规格来源；批准状态、验证证据和交接记录仍归各目标仓库自己的 `project-facts/`，不因 Store 存在而集中存放或复制。
+
 ## Spec Kit 映射
 
 若目标项目已采用 GitHub Spec Kit：
@@ -351,6 +353,7 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 | 未知项确认 | `/speckit.clarify` 产出与单独 unknowns 记录 |
 | 规格质量检查 | `/speckit.checklist` |
 | 跨资料一致性 | `/speckit.analyze` |
+| 老项目差距分析 | `/speckit.converge`（v0.13.0 起，2026-07-20 核查官方仓库）；其产出视为 `OBSERVED` 线索，差距项由责任人确认前不标为 `APPROVED` |
 | 验收证据 | feature spec 旁的 `evidence.md` 或项目统一 evidence 目录 |
 | 交接摘要 | 项目自己的 handover 文件 |
 

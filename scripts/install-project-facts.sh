@@ -194,26 +194,6 @@ if [[ "$upgrade_existing" == "true" ]]; then
   exit 0
 fi
 
-if [[ -n "$skill_dir" ]]; then
-  for skill_name in project-facts-maintainer low-token-context-maintainer; do
-    skill_destination="$skill_dir/$skill_name"
-    if [[ -e "$skill_destination" ]]; then
-      printf 'Refusing to overwrite existing skill directory: %s\n' "$skill_destination" >&2
-      exit 1
-    fi
-  done
-fi
-
-if [[ "$with_helper_scripts" == "true" ]]; then
-  for helper_script in "${helper_scripts[@]}"; do
-    helper_destination="$target/scripts/$helper_script"
-    if [[ -e "$helper_destination" ]]; then
-      printf 'Refusing to overwrite existing helper script: %s\n' "$helper_destination" >&2
-      exit 1
-    fi
-  done
-fi
-
 if [[ "$install_mode" == "lite" ]]; then
   mkdir -p "$fact_destination/handover" "$fact_destination/skill-feedback" "$fact_destination/specs/_template"
   cp "$repo_root/template/project-facts/README.md" "$fact_destination/"

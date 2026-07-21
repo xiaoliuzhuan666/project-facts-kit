@@ -1,11 +1,23 @@
 # Replace @domain-owner and @tool-owner with real GitHub teams or users.
-/.github/CODEOWNERS          @tool-owner
-/project-facts/specs/       @domain-owner
-/project-facts/decisions/   @domain-owner
-/project-facts/changes/     @domain-owner
-/AGENTS.md                   @tool-owner
+# This fragment is installed into the business project (project-facts/integration/github/).
+# It only lists paths that exist in the business project after project-facts installation.
+# The kit repository's own paths (skills/, template/, scripts/) are owned by the kit
+# repository's own CODEOWNERS and are intentionally not listed here.
+
+# The business project's own CODEOWNERS file.
+/.github/CODEOWNERS            @tool-owner
+
+# Approved or status-marked requirement specs.
+/project-facts/specs/          @domain-owner
+
+# ADRs and long-term decisions.
+/project-facts/decisions/      @domain-owner
+
+# Change proposals, requirements and evidence.
+/project-facts/changes/        @domain-owner
+
+# Agent instructions in the business project root.
+/AGENTS.md                     @tool-owner
+
+# Skill feedback candidates; shared skills are reviewed in the kit repository.
 /project-facts/skill-feedback/ @tool-owner
-/skills/                     @tool-owner
-/template/                   @tool-owner
-/scripts/install-project-facts.sh @tool-owner
-/scripts/sync-skills.sh      @tool-owner

@@ -11,6 +11,7 @@
 - Status: `APPROVED | OBSERVED | UNKNOWN | CONFLICT | DEPRECATED`
 - Owner: `<role or name>`
 - Sources: `<spec, ADR, PR, acceptance record, code or test path>`
+- Approval record: `<approver, YYYY-MM-DD, record path; required when Status is APPROVED>`
 - Applies to: `<scope>`
 - Excludes: `<non-scope>`
 

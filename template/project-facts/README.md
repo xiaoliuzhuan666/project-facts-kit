@@ -34,7 +34,7 @@
 8. 对应代码、测试与运行验证
 
 > [!TIP]
-> 可以在目标仓库根目录运行 `scripts/generate-repo-map.sh` 自动扫描代码符号并生成/更新 `repo_map.txt`。
+> 可以在目标仓库根目录运行 `scripts/generate-repo-map.sh` 自动扫描代码符号并生成/更新 `repo_map.txt`；该 helper 脚本不属于默认安装内容，需在安装时加上 `--with-helper-scripts` 才会复制到目标仓库。
 
 ## 目录
 

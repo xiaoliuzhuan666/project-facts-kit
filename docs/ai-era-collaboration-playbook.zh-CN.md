@@ -11,7 +11,7 @@
 
 1. 项目仓库里保存少量固定 Markdown 文件。
 2. 所有 AI 和人按同一读取顺序工作。
-3. 需求状态只分为 `APPROVED`、`OBSERVED`、`UNKNOWN`、`CONFLICT`。
+3. 需求状态只分为 `APPROVED`、`OBSERVED`、`UNKNOWN`、`CONFLICT`、`DEPRECATED`。
 4. 行为变化必须有受影响需求、未知项和验证记录。
 5. 高风险变更再引入 Spec Kit、OpenSpec、Kiro、CODEOWNERS 或 CI 检查。
 
@@ -226,6 +226,7 @@ rg --files | sed -n '1,160p'
 - 只观察到的行为 OBSERVED
 - 未确认问题 UNKNOWN
 - 冲突 CONFLICT
+- 已被替代但保留追溯 DEPRECATED
 - 需要先验证的命令
 - 不能马上修改的业务点
 
@@ -238,7 +239,7 @@ rg --files | sed -n '1,160p'
 
 | 行为或需求 | 状态 | 来源 | 最近验证 | 未知项 |
 | --- | --- | --- | --- | --- |
-| `<fill>` | `APPROVED / OBSERVED / UNKNOWN / CONFLICT` | `<path>` | `Pass / Fail / Not run` | `<fill>` |
+| `<fill>` | `APPROVED / OBSERVED / UNKNOWN / CONFLICT / DEPRECATED` | `<path>` | `Pass / Fail / Not run` | `<fill>` |
 
 接手者只根据信息完整的范围继续工作。高影响 `UNKNOWN` 或 `CONFLICT` 仍存在时，不能把相关业务规则改成新的默认行为。
 
@@ -312,7 +313,7 @@ project-facts/changes/<yyyy-mm-dd>-<change>/
 - 不为迁移目录而迁移目录。
 - 已有 Spec Kit/OpenSpec/Kiro 文件就继续用。
 - 没有这些文件的老项目，先用 `project-facts/`。
-- 外部工具产出的文档也要区分 `APPROVED`、`OBSERVED`、`UNKNOWN`、`CONFLICT`。
+- 外部工具产出的文档也要区分 `APPROVED`、`OBSERVED`、`UNKNOWN`、`CONFLICT`、`DEPRECATED`。
 
 ## 轻量 PR 规则
 
@@ -330,6 +331,7 @@ project-facts/changes/<yyyy-mm-dd>-<change>/
 - OBSERVED:
 - UNKNOWN:
 - CONFLICT:
+- DEPRECATED:
 
 ## 验证
 
