@@ -6027,6 +6027,7 @@ function renderSkillFeedbackReviewAutomationPrompt() {
 4. 项目专属业务规则不进入共享 Skill，标 rejected 或要求留在目标项目 project-facts。
 5. 只有 accepted 且证据充分的候选，才建议后续 PR 修改 skills/、template/、scripts/ 或 packages/ai-context-kit/。
 6. 检查 proposed 候选年龄：SFC ID 中的日期距今超过 14 天且仍无 Tool/library owner 结论的，在评审输出中置顶提醒；超过 30 天且证据已不可复现的，建议降为 needs-evidence 或 rejected 并写明原因。
+7. 按影响范围给候选分层：项目本地（零评审，立即生效）、共享低风险（文档措辞、提示词文案、新增 reference，检查通过加 7 天异议窗口）、共享高风险（工作流规则、模板结构、CLI 行为、制度正文，必须 owner 显式批准）。
 
 输出规则：
 - 可以更新 docs/skill-iteration-backlog.zh-CN.md 的状态、证据摘要和下一步建议。
