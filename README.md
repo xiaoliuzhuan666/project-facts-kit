@@ -7,10 +7,23 @@
 | 问题 | 本项目提供的做法 |
 | --- | --- |
 | 项目知识只在聊天、个人记忆或某个模型上下文里 | 把项目事实写进目标仓库的 Git 历史 |
-| 代码现状、业务意图和 AI 推断混在一起 | 用 `APPROVED`、`OBSERVED`、`UNKNOWN`、`CONFLICT` 区分状态 |
+| 代码现状、业务意图和 AI 推断混在一起 | 用 `APPROVED`、`OBSERVED`、`UNKNOWN`、`CONFLICT`、`DEPRECATED` 区分状态 |
 | 新同事接手时需要大量口头解释 | 提供 `project-facts/`、`AGENTS.md` 片段和交接模板 |
 | 多仓库 workspace 消耗大量上下文 | 用 `ai-context-kit` 生成父目录路由、子仓库索引和 token 报告 |
 | 真实项目经验想沉淀为共享 Skill | 先进入候选记录，再由 Tool/library owner 审阅 |
+
+### 与 Agent 记忆工具的区别
+
+Claude Code auto memory、Mem0 等工具管理的是"Agent 自己记住了什么"：由模型自动抽取、自动更新，默认本机私有。本项目管理的是"哪些项目事实经谁批准、证据是什么、何时复审"（2026-07-20 市场调研，见 `docs/research/`）：
+
+| 维度 | Agent 记忆工具 | 本项目 |
+| --- | --- | --- |
+| 写入者 | 模型自动抽取，无批准环节 | AI 起草，责任人批准后才算 `APPROVED` |
+| 事实与推断 | 混在一起或按置信度加权 | `APPROVED` 与 `OBSERVED`/`UNKNOWN` 强制分离 |
+| 验证证据 | 通常不保存 | 每次变更留 `evidence.md`，未执行写 `Not run` |
+| 共享范围 | 本机、单人会话 | 随目标仓库 Git 历史给全团队和不同模型 |
+
+Agent 记忆可以提候选，但不能直接改写已批准项目事实。
 
 ## 核心分工
 
@@ -85,6 +98,7 @@ ai-context-kit upgrade -w .
 | 文件 | 记录内容 |
 | --- | --- |
 | `project-facts/project.md` | 项目目标、范围、责任人 |
+| `project-facts/glossary.md` | 业务术语和缩写（lite 模式同样安装） |
 | `project-facts/runtime.md` | 运行、部署、数据、验证入口 |
 | `project-facts/iteration-plan.md` | 当前任务、状态、依赖和验收入口 |
 | `project-facts/handover/current.md` | 当前交接信息 |
@@ -176,6 +190,7 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 | `template/AGENTS.project-facts.fragment.md` | 可合并到目标项目 `AGENTS.md` 的 Agent 规则 |
 | `skills/project-facts-maintainer/` | 项目事实维护 Skill |
 | `skills/low-token-context-maintainer/` | Codex 低 token 接手 Skill |
+| `plugins/project-facts-kit/` | Codex marketplace 形式的 plugin 分发外壳 |
 | `plugins/project-facts-kit-codex/` | Codex plugin 形式的分发外壳 |
 | `packages/ai-context-kit/` | 多仓库上下文、索引和 token 报告 CLI |
 | `scripts/setup-local-kit.sh` | 本机首次准备和更新脚本 |
@@ -185,7 +200,7 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 ## 关键原则
 
 - 项目事实必须进入目标项目 Git 历史，不能只留在聊天、个人 memory 或模型上下文里。
-- `APPROVED`、`OBSERVED`、`UNKNOWN`、`CONFLICT` 必须区分记录。
+- `APPROVED`、`OBSERVED`、`UNKNOWN`、`CONFLICT`、`DEPRECATED` 必须区分记录。
 - 模型可以协助阅读、整理、实现和检查，不能自行批准业务含义。
 - 需求变化需要对应验证证据；未执行的检查写为 `Not run`。
 - 模板升级不能覆盖目标仓库已有项目事实目录或已有 Skill。
@@ -198,11 +213,18 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 | 制度规则和状态定义 | [项目事实制度](docs/project-facts-governance.zh-CN.md) |
 | 接入路径和多仓库说明 | [采用指南](docs/adoption-guide.zh-CN.md) |
 | 可复制命令 | [Project Facts Kit 更新命令速查](docs/project-facts-kit-update-commands.zh-CN.md) |
+| 团队快速上手 | [团队快速使用](docs/team-quick-start.zh-CN.md) |
+| 培训与中途接手演练 | [团队培训与迭代接手 Runbook](docs/team-training-iteration-runbook.zh-CN.md) |
 | 多项目接手分层 | [AI 时代多项目轻量协作手册](docs/ai-era-collaboration-playbook.zh-CN.md) |
 | Skill 是否适合作为载体 | [Skill 作为载体的评估](docs/skill-carrier-assessment.zh-CN.md) |
 | 自动化候选和评审 | [Skill 反哺自动化运行手册](docs/skill-feedback-automation-runbook.zh-CN.md) |
+| 底层操作流程与排障 | [ai-context-kit 日常使用流程](docs/ai-context-kit-operating-workflow.zh-CN.md) |
+| CLI 能力现状与待办 | [ai-context-kit 当前状态与待办](docs/ai-context-kit-status-and-todo.zh-CN.md) |
+| 上下文质量与 token 一致性设计原因 | [AI 上下文质量、token 与一致性设计说明](docs/ai-context-quality-token-consistency-design.zh-CN.md) |
 | 真实任务验证缺口 | [真实任务 A/B 审计](docs/ai-context-kit-real-task-ab-audit.md) |
 | 通用性与同类项目调研 | [Project Facts Kit 通用性、效果与低侵入调研报告](docs/research/project-facts-context-market-research-2026-07-15.zh-CN.md) |
+| 市场调研交叉验证增量（2026-07-20） | [市场调研交叉验证（2026-07-20 增量）](docs/research/project-facts-context-market-research-2026-07-20.zh-CN.md) |
+| 多项目需求连续性（历史调研稿，权威规则以项目事实制度为准） | [AI 时代多项目需求连续性协作报告](docs/ai-era-multi-project-requirements-continuity.zh-CN.md) |
 | neuDrive 迁移边界 | [迁移与接入说明](docs/neudrive-integration.zh-CN.md) |
 
 ## 维护与验证

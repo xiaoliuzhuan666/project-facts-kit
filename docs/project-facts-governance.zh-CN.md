@@ -4,7 +4,7 @@
 
 状态：待团队试行验证
 
-更新日期：2026-05-25
+更新日期：2026-07-20
 
 ## 目的
 
@@ -66,7 +66,10 @@ project-facts/
   README.md
   project.md
   glossary.md
+  runtime.md
   iteration-plan.md
+  skill-feedback/
+    _template.md
   specs/
     <domain>/
       spec.md
@@ -89,7 +92,9 @@ project-facts/
 | --- | --- | --- |
 | `project.md` | 目标、范围、责任人、运行与验证入口 | Maintainer |
 | `glossary.md` | 业务名词、边界和易混淆概念 | Domain owner |
+| `runtime.md` | 运行方式、发布链路、数据目录、反向代理、资源限制和回滚方式 | Maintainer |
 | `iteration-plan.md` | 当前迭代任务、负责人、状态、依赖和验收入口 | Current maintainer |
+| `skill-feedback` | 反哺共享 Skill 的候选项与证据，不直接修改正式 Skill | 任务负责人 |
 | `specs` | 当前批准或明确标记状态的要求 | Domain owner + Maintainer |
 | `changes` | 一次修改的理由、非目标、任务、问题和证据 | 任务负责人 |
 | `decisions` | 影响长期实现或行为的决定 | 决定参与者 |
@@ -102,9 +107,10 @@ project-facts/
 ```markdown
 ## REQ-<DOMAIN>-001 <标题>
 
-- 状态：APPROVED | OBSERVED | UNKNOWN | CONFLICT
+- 状态：APPROVED | OBSERVED | UNKNOWN | CONFLICT | DEPRECATED
 - 负责人：<角色或姓名>
 - 来源：<path, PR, ADR or acceptance record>
+- 批准记录：<批准人, YYYY-MM-DD, 记录路径；状态为 APPROVED 时必填>
 - 适用范围：<scope>
 - 不适用范围：<non-scope>
 
@@ -147,6 +153,7 @@ Scenario: <场景名称>
 | 改变哪些现有要求，哪些明确不变 | `proposal.md` 与 `requirements.md` |
 | 还有什么无法判断 | `unknowns.md` |
 | 怎样实施 | `design.md` 与 `tasks.md` |
+| 由谁批准、何时批准 | `proposal.md` 的 Approval 表 |
 | 哪些要求已经检查 | `evidence.md` |
 | 长期决定为何如此 | 必要时新增 ADR |
 
@@ -160,7 +167,7 @@ Scenario: <场景名称>
 2. 在父目录或大型仓库中，先读取父目录路由、工作区地图或 `repo_map.txt` 等导航索引，只按任务范围继续打开源码。
 3. 查找与任务有关的现行规格、变化记录、ADR 与最近交接。
 4. 检查代码、接口、测试和发布证据是否支持规格描述。
-5. 输出 `APPROVED / OBSERVED / UNKNOWN / CONFLICT` 表格，并引用文件路径。
+5. 输出 `APPROVED / OBSERVED / UNKNOWN / CONFLICT / DEPRECATED` 表格，并引用文件路径。
 6. 高影响未知项提交责任人处理；低影响未知项在变更中明确记录。
 7. 只在范围与验证路径足够明确后开始实现。
 

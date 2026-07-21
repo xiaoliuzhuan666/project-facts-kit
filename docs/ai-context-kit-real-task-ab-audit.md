@@ -1,6 +1,7 @@
+<!-- generated-by: ai-context-kit -->
 # ai-context-kit 真实任务 A/B 审计
 
-生成时间：2026-06-08T03:56:17.911Z
+生成时间：2026-07-21T01:39:43.789Z
 
 工作区：`.`
 
@@ -10,8 +11,8 @@
 
 | 指标 | 数值 |
 |---|---:|
-| markdown files | 6 |
-| candidate records | 2 |
+| markdown files | 9 |
+| candidate records | 5 |
 | supporting files | 4 |
 | counted records | 0 |
 | missing categories | `backend-bug`, `miniapp-integration`, `cross-end-field` |
@@ -31,6 +32,9 @@
 |---|---|---|---|---|---|---|---|---|
 | `docs/real-task-ab/2026-06-06-kt-boat-rental-cross-end-field.md` | 2026-06-06-kt-boat-rental-cross-end-field | no | 暂不计入；可作为 cross-end-field 局部证据 | not counted: partial evidence | mixed | yes | unknown；没有构建、接口联调或真实支付证据 | 用 v0.3.39+ 刷新临时或真实授权工作区后，重跑跨端字段完整任务；另外增加后端 bug 和小程序联调各一条 |
 | `docs/real-task-ab/2026-06-07-cc-connect-backend-path-footer.md` | 2026-06-07-cc-connect-backend-path-footer | no | backend-bug 流程验证候选 | not counted: exec failed | yes，B 组发现并修复了 footer/path 失败后，又通过全量测试发现并修复 diff2html 缺失时的异步回复顺序问题 | unknown | no evidence；相关测试和 go test ./core 已通过 | 需要在 Codex workspace 恢复额度后重跑独立 A/B session；需要再完成小程序联调和跨端字段完整任务 |
+| `docs/real-task-ab/2026-06-15-vola-skill-mcp-management-audit.md` | 2026-06-15-vola-skill-mcp-management-audit | no | Not one of backend-bug / miniapp-integration / cross-end-field; keep as additional tooling-analysis evidence | not counted: partial evidence | mixed | yes for input tokens and command executions; no for output/reasoning tokens | mixed | Fix Team MCP tags, then add endpoint and disposable adapter injection tests. Add Vola AGENTS.md before more low-token samples. |
+| `docs/real-task-ab/2026-07-18-kt-presale-insurance-child-cross-client.md` | 2026-07-18-kt-presale-insurance-child-cross-client | no | 暂不计入；可作为 cross-end-field 局部证据 | not counted: partial evidence | unknown；无 A 组 | unknown；无 A 组且无 token 记录 | unknown；静态检查无新增 lint 错误，运行时验收 Not run | 在测试环境完成验收矩阵中的页面/接口/支付项后，可用同一任务 prompt 补跑 A 组对照，并开启 observe hooks 记录 token |
+| `docs/real-task-ab/2026-07-19-kt-h5-reservation-contact-prefill.md` | 2026-07-19-kt-h5-reservation-contact-prefill | no | 暂不计入；可作为 cross-end-field 局部证据 | not counted: partial evidence | unknown；无 A 组 | unknown；无 A 组且无 token 记录 | unknown；静态断言全部通过，编译与运行时验证 Not run | 用户完成编译与登录态页面检查后，可用同一任务 prompt 补跑 A 组对照，并开启 observe hooks 记录 token |
 
 ## 支撑材料
 
