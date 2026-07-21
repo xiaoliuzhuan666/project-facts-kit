@@ -59,6 +59,8 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 每个候选项必须包含：来源任务、涉及 Skill、观察到的有用行为、缺失行为、误导行为、工具冲突、证据路径、实际验证结果、是否跨项目适用、是否可能只是项目专属规则、建议进入哪个 Skill 小节。
 
 证据不足标为 needs-evidence；否则标为 proposed。输出候选记录到 project-facts/skill-feedback/，一条候选一份文件。没有候选时，写一条简短运行记录，说明读取了哪些入口和为什么没有候选。
+
+候选文件和运行记录当天完成 git add 和 git commit；未提交的候选视为未交付。
 ```
 
 候选文件必须保留这些字段：
@@ -75,7 +77,7 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 
 ## Skill 仓库评审任务
 
-建议每天或每周运行一次，取决于候选量。它读取本仓库的 `docs/skill-feedback/`、`docs/skill-iteration-backlog.zh-CN.md`、相关证据和 `AGENTS.md`，只产出评审建议或 backlog 更新，不直接改正式 Skill。
+建议每周运行一次；候选积压时临时加频。它读取本仓库的 `docs/skill-feedback/`、`docs/skill-iteration-backlog.zh-CN.md`、相关证据和 `AGENTS.md`，只产出评审建议或 backlog 更新，不直接改正式 Skill。
 
 推荐提示词：
 
@@ -87,6 +89,8 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 把候选分为 proposed、needs-evidence、accepted、rejected。只有有 Tool/library owner 审阅记录且证据充分的候选，才可建议后续 PR 修改 skills、template、scripts 或 CLI。
 
 输出 review notes 和 backlog 更新建议。没有 owner 审阅记录时，只能建议 needs-evidence 或 proposed。
+
+检查 proposed 候选年龄：SFC ID 中的日期距今超过 14 天且仍无 Tool/library owner 结论的，在评审输出中置顶提醒；超过 30 天且证据已不可复现的，建议降为 needs-evidence 或 rejected 并写明原因。
 ```
 
 ## PR 合并门槛
@@ -144,7 +148,7 @@ Agent 有 Codex app automation 能力时，按当前打开目录创建或更新 
 | kind | `cron` |
 | executionEnvironment | `local` |
 | cwd | 本仓库路径 |
-| schedule | 每天北京时间 19:00，或每周固定时间 |
+| schedule | 每周固定时间（候选积压时临时加频） |
 | prompt | 使用“Skill 仓库评审任务”的提示词，或 `ai-context-kit automation-prompt --type skill-feedback-review` 生成的提示词 |
 
 自动任务的产物仍需要走 Git diff、PR、CODEOWNERS 和检查命令。它可以让候选和评审材料定期出现，但不能让 AI 绕过审阅直接改变共享规则。

@@ -89,6 +89,7 @@
 | `SFC-20260715-universal-low-intrusion-phase-a` | `docs/skill-feedback/2026-07-15-universal-low-intrusion-phase-a.md` | `tooling_fix` | `applied` | 2026-07-15 已完成 Phase A 修改；CLI/Bash、资料库、Skill 和 Plugin 检查通过。 |
 | `SFC-20260717-evidence-first-cross-runtime-ui-debugging` | `docs/skill-feedback/2026-07-17-evidence-first-cross-runtime-ui-debugging.md` | `improve_skill` | `proposed` | 2026-07-17 登记：建议在 `project-facts-maintainer` 的 `Lightweight Change Evidence` 后增加跨运行时 UI 数据检查点规则；Reviewer decision 为 `Pending`，保持 `proposed`。“游园体验”、板块 ID、商品字段名和页面路径留在目标项目。 |
 | `SFC-20260720-token-budgeted-context-router` | `docs/skill-feedback/2026-07-20-token-budgeted-context-router.md` | `tooling_fix` | `proposed` | 2026-07-20 登记：query-aware、带硬 token 上限的 `context` 命令（7-15 调研阶段 C、7-20 交叉验证 §5）；Reviewer decision 为 `Pending`，保持 `proposed`。实现前提：至少 1 条 counted 真实任务 A/B，且单独 PR 实施。 |
+| `SFC-20260721-real-task-audit-401-heuristic` | `docs/skill-feedback/2026-07-21-real-task-audit-401-heuristic.md` | `tooling_fix` | `proposed` | 2026-07-21 登记：`real-task-audit` 对记录全文匹配 "401"，会把"接口匿名访问被拒"这类正常观测误标为 `exec failed`；建议把失败检测收窄到"执行失败记录"小节；Reviewer decision 为 `Pending`，保持 `proposed`。 |
 
 ## 已优化到 skill 的项目
 
