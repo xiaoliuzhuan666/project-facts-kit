@@ -1,7 +1,7 @@
 <!-- generated-by: ai-context-kit -->
 # ai-context-kit 真实任务 A/B 审计
 
-生成时间：2026-07-21T01:39:43.789Z
+生成时间：2026-07-22T05:09:11.356Z
 
 工作区：`.`
 
@@ -11,9 +11,9 @@
 
 | 指标 | 数值 |
 |---|---:|
-| markdown files | 9 |
+| markdown files | 10 |
 | candidate records | 5 |
-| supporting files | 4 |
+| supporting files | 5 |
 | counted records | 0 |
 | missing categories | `backend-bug`, `miniapp-integration`, `cross-end-field` |
 | process warnings | 0 |
@@ -44,6 +44,7 @@
 | `docs/real-task-ab/2026-06-08-cc-connect-exec-events.md` | missing conclusion |
 | `docs/real-task-ab/2026-06-08-cc-connect-real-ab-exec-events.md` | missing conclusion |
 | `docs/real-task-ab/2026-06-08-kt-mcp-success-exec-events.md` | missing conclusion |
+| `docs/real-task-ab/2026-07-21-codegraph-kt-smoke.md` | missing conclusion |
 
 ## 流程风险提示
 

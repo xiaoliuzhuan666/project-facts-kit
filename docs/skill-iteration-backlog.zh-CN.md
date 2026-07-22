@@ -92,6 +92,7 @@
 | `SFC-20260721-real-task-audit-401-heuristic` | `docs/skill-feedback/2026-07-21-real-task-audit-401-heuristic.md` | `tooling_fix` | `proposed` | 2026-07-21 登记：`real-task-audit` 对记录全文匹配 "401"，会把"接口匿名访问被拒"这类正常观测误标为 `exec failed`；建议把失败检测收窄到"执行失败记录"小节；Reviewer decision 为 `Pending`，保持 `proposed`。 |
 | `SFC-20260721-provider-adapter-architecture` | `docs/skill-feedback/2026-07-21-provider-adapter-architecture.md` | `tooling_fix` | `accepted` | 2026-07-21 登记：provider 适配架构（平台化集成第三方省 token 方案）：core 零依赖、薄 adapter、只读能力检测、失败静默回落、A/B 效果门槛、用户负担红线；承接 `SFC-20260720`。2026-07-21 owner 与首个实例候选一并接受。 |
 | `SFC-20260721-codegraph-adapter-kt-ab-validation` | `docs/skill-feedback/2026-07-21-codegraph-adapter-kt-ab-validation.md` | `tooling_fix` | `accepted` | 2026-07-21 登记：provider 架构首个 adapter 实例——CodeGraph（MIT，已核实）版本钉、查询侧 adapter、崆峒两仓 A/B 验证与效果门槛；Headroom 排除原因已记录。2026-07-21 owner 接受，版本钉定为 1.4.1（v1.5.0 发布当天不钉）。 |
+| `SFC-20260721-rg-non-tty-stdin-pitfall` | `docs/skill-feedback/2026-07-21-rg-non-tty-stdin-pitfall.md` | `improve_skill` | `proposed` | 2026-07-21 登记：无路径参数的 `rg <pattern>` 在非 TTY 环境读 stdin 静默返回空；Skill/文档 rg 示例统一带 `.`，排查 CLI 内部调用；崆峒冒烟实测复现；Reviewer decision 为 `Pending`，保持 `proposed`。 |
 
 ## 已优化到 skill 的项目
 
