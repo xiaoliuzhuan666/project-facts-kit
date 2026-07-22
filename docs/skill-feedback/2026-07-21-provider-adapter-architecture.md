@@ -55,6 +55,6 @@
 
 1. 定义 provider 接口（7-15 §5.6 草案）+ `rg` 参考实现 + 只读 `providers` 检测命令。
 2. 在接口上实现 token-budgeted `context`，承接 `SFC-20260720-token-budgeted-context-router` 的前提条件。
-3. 外部 adapter 逐个独立候选，先 A/B 证明再推荐。
+3. 外部 adapter 逐个独立候选，先 A/B 证明再推荐。首个实例：`SFC-20260721-codegraph-adapter-kt-ab-validation`（CodeGraph 版本钉、查询侧 adapter、崆峒 A/B）。
 
 前置条件：Tool/library owner 接受本候选；每一步单独 PR，不与文档或分发改动混合。
