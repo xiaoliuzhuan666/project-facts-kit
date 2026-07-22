@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Candidate ID | `SFC-20260721-provider-adapter-architecture` |
-| Status | `proposed` |
+| Status | `accepted` |
 | Created at | `2026-07-21` |
 | Source project | `project-facts-kit` |
 | Skill | `ai-context-kit`, `low-token-context-maintainer` |
@@ -18,8 +18,8 @@
 | Source task | 2026-07-21 用户提出平台化方向：本项目作为平台，第三方成熟省 token 方案作为可选集成；本项目只做能力检测与效果测量，轻量干预，不替用户运维这些方案。用户同时明确约束：普通使用者已经很累，任何新能力必须省心减负、不得复杂化 |
 | Evidence paths | `docs/research/project-facts-context-market-research-2026-07-15.zh-CN.md`（§5.5、§5.6、§5.7、§6、§6.4、阶段 E）；`docs/research/project-facts-context-market-research-2026-07-20.zh-CN.md`（§3.3、§5）；`docs/skill-feedback/2026-07-20-token-budgeted-context-router.md` |
 | Verification run | Not run（本候选只是登记，未修改 CLI 或 Skill） |
-| Reviewer | Pending |
-| Reviewer decision | Pending |
+| Reviewer | User acting as Tool/library owner |
+| Reviewer decision | Accepted 2026-07-21（与首个实例候选 `SFC-20260721-codegraph-adapter-kt-ab-validation` 一并接受） |
 
 ## Observed Behavior
 

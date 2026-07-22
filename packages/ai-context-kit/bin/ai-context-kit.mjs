@@ -6296,7 +6296,7 @@ function summarizeWorkspace(workspace) {
 
 function runCodegraphInit(context, opts) {
   if (!context.codegraph) {
-    log("codegraph not found. Install with: npm install -g @colbymchenry/codegraph@0.9.9");
+    log("codegraph not found. Install with: npm install -g @colbymchenry/codegraph@1.4.1");
     return;
   }
   if (context.repos.length > 1 && !opts.repos?.length) {
@@ -6757,7 +6757,7 @@ function capabilityCodegraphState(context) {
       name: "CodeGraph",
       status: candidates.length ? "missing_cli" : "skip",
       detail: candidates.length ? `recommended for ${candidates.map((item) => item.repo.name).join(", ")}` : "current workspace is small or has no strong symbol-query signal",
-      command: candidates.length ? "npm install -g @colbymchenry/codegraph@0.9.9" : null
+      command: candidates.length ? "npm install -g @colbymchenry/codegraph@1.4.1" : null
     };
   }
   const initialized = context.repos.filter((repo) => codegraphInitialized(repo.path));
