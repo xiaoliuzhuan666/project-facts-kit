@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Candidate ID | `SFC-20260721-codegraph-adapter-kt-ab-validation` |
-| Status | `proposed` |
+| Status | `accepted` |
 | Created at | `2026-07-21` |
 | Source project | `project-facts-kit` |
 | Skill | `ai-context-kit`, `low-token-context-maintainer` |
@@ -19,8 +19,8 @@
 | Source task | 2026-07-21 用户要求深度分析 headroomlabs-ai/headroom 与 colbymchenry/codegraph 能否作为第一批省 token 插件在崆峒验证 |
 | Evidence paths | 两个仓库 README 与 LICENSE 原文（2026-07-21 核查）；[codegraph releases](https://github.com/colbymchenry/codegraph/releases)（v1.5.0，2026-07-21 发布）；`packages/ai-context-kit/bin/ai-context-kit.mjs`（`runCodegraphInit`、`capabilityCodegraphState`）；两份市场调研（7-15、7-20） |
 | Verification run | Not run（本候选只是登记）；外部资料均为一手来源，查询日期 2026-07-21 |
-| Reviewer | Pending |
-| Reviewer decision | Pending |
+| Reviewer | User acting as Tool/library owner |
+| Reviewer decision | Accepted 2026-07-21（PR #7 合并后用户明确"接受并开工"；版本钉定为 1.4.1——v1.5.0 发布当天不钉，待稳定后跟进） |
 
 ## Observed Behavior
 
