@@ -7,6 +7,7 @@ import { spawnSync } from "node:child_process";
 const PACKAGE_JSON = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const VERSION = PACKAGE_JSON.version;
 const MANAGED_MARKER = "<!-- generated-by: ai-context-kit -->";
+const PRESERVED_BLOCK_MARKER = "<!-- ai-context-kit: preserved-block -->";
 const MANAGED_LINE_MARKER = "# generated-by: ai-context-kit";
 const MANAGED_SCRIPT_MARKER = "// generated-by: ai-context-kit";
 const CODEX_MEM_GENERATOR = "ai-context-kit codex-mem";
@@ -439,14 +440,16 @@ function discoverRepos(workspace) {
 }
 
 function discoverRepoRoots(workspace) {
-  const directGit = path.join(workspace, ".git");
-  if (fs.existsSync(directGit)) return [workspace];
-
   const entries = fs.readdirSync(workspace, { withFileTypes: true });
-  return entries
+  const childRepos = entries
     .filter((entry) => entry.isDirectory())
     .map((entry) => path.join(workspace, entry.name))
     .filter((dir) => fs.existsSync(path.join(dir, ".git")));
+  if (childRepos.length > 0) return childRepos;
+
+  const directGit = path.join(workspace, ".git");
+  if (fs.existsSync(directGit)) return [workspace];
+  return [];
 }
 
 function buildInspectContext(workspace) {
@@ -6923,8 +6926,18 @@ function formatAge(ageMs) {
   return `${days}d`;
 }
 
+function extractPreservedBlock(target) {
+  if (!fs.existsSync(target)) return "";
+  const current = safeRead(target);
+  const idx = current.indexOf(PRESERVED_BLOCK_MARKER);
+  if (idx === -1) return "";
+  const block = current.slice(idx).trimEnd();
+  return block ? `\n\n${block}\n` : "";
+}
+
 function writeManagedFile(target, content, opts) {
-  const body = `${MANAGED_MARKER}\n${content}`;
+  const preserved = extractPreservedBlock(target);
+  const body = `${MANAGED_MARKER}\n${content}${preserved}`;
   if (fs.existsSync(target)) {
     if (!opts.force) {
       log(`skip existing ${target}`);

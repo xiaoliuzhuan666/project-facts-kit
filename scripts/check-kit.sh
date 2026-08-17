@@ -286,6 +286,30 @@ printf '# Team-approved project facts\n' > "$tmp/quick-entry/project-facts/proje
 )
 grep -Fxq '# Team-approved project facts' "$tmp/quick-entry/project-facts/project.md"
 
+mkdir -p "$tmp/git-parent-workspace/web-app" "$tmp/git-parent-workspace/api-service"
+git -C "$tmp/git-parent-workspace" init >/dev/null 2>&1
+git -C "$tmp/git-parent-workspace/web-app" init >/dev/null 2>&1
+git -C "$tmp/git-parent-workspace/api-service" init >/dev/null 2>&1
+printf '{"name":"legacy-parent","dependencies":{"vue":"2.7.0"}}\n' > "$tmp/git-parent-workspace/package.json"
+printf '{"name":"web-app","dependencies":{"vue":"3.5.0"}}\n' > "$tmp/git-parent-workspace/web-app/package.json"
+printf '<project><artifactId>api-service</artifactId></project>\n' > "$tmp/git-parent-workspace/api-service/pom.xml"
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" inspect --workspace "$tmp/git-parent-workspace" --json > "$tmp/git-parent-workspace-inspect.json"
+node - "$tmp/git-parent-workspace-inspect.json" <<'NODE'
+const fs = require("fs");
+const data = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+const paths = data.repositories.map((repo) => repo.path).sort();
+if (JSON.stringify(paths) !== JSON.stringify(["api-service", "web-app"])) process.exit(1);
+if (data.repositories.some((repo) => repo.path === ".")) process.exit(1);
+NODE
+"$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" doctor --workspace "$tmp/git-parent-workspace" > "$tmp/git-parent-workspace-doctor.md"
+grep -Fq 'repos: 2' "$tmp/git-parent-workspace-doctor.md"
+grep -Fq -- '- api-service' "$tmp/git-parent-workspace-doctor.md"
+grep -Fq -- '- web-app' "$tmp/git-parent-workspace-doctor.md"
+if grep -Fq -- '- git-parent-workspace' "$tmp/git-parent-workspace-doctor.md"; then
+  printf 'Parent Git directory was incorrectly treated as the only repository.\n' >&2
+  exit 1
+fi
+
 mkdir -p \
   "$tmp/inspect-workspace/openspec" \
   "$tmp/inspect-workspace/project-facts" \
