@@ -139,6 +139,25 @@ ai-context-kit upgrade -w .
   --refresh-skills
 ```
 
+#### AGENTS.md 保留区
+
+`ai-context-kit` 生成的 `AGENTS.md`（父目录和子仓库都会生成）默认在每次 `upgrade` 时整体重写。需要让 Agent 遵守的额外规则（例如 `project-facts/AGENTS.fragment.md` 里合并进来的 Project Facts 工作流），用保留区标记包裹，升级时不会被覆盖：
+
+```markdown
+<!-- ai-context-kit: preserved-block -->
+
+## 这里放人工维护的规则
+
+upgrade 会把本标记之后的内容原样保留，只重写标记之前的生成内容。
+```
+
+用法要点：
+
+- 标记放在需要保留的内容**之前**，标记之后到文件末尾的全部内容都会在升级时保留。
+- 一个文件内只需一个标记；不要在保留区内再嵌套第二个标记。
+- 保留区是按文件生效的：父目录 `AGENTS.md` 和各子仓库 `AGENTS.md` 各自独立维护自己的保留区。
+- 没有标记的文件升级时行为不变，仍整体重写。
+
 ### 多仓库父目录
 
 当一个父目录下有后端、前端、小程序等多个独立仓库时，使用 `ai-context-kit`：
