@@ -1,12 +1,15 @@
 {
   "name": "project-facts-kit",
-  "version": "0.3.60",
+  "version": "0.3.61",
   "private": true,
   "description": "Project facts templates, Codex context controls, and team handoff workflows.",
   "type": "module",
   "workspaces": [
     "packages/*"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "bin": {
     "project-facts-kit": "packages/ai-context-kit/bin/ai-context-kit.mjs",
     "ai-context-kit": "packages/ai-context-kit/bin/ai-context-kit.mjs"

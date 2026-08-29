@@ -185,6 +185,7 @@ project-facts-kit context editor-tasks --workspace /absolute/path/to/parent
     runtime.md
     iteration-plan.md
     specs/_template/spec.md
+    skill-feedback/_template.md
     handover/current.md
     handover/for-next-maintainer.md
 ```
@@ -215,6 +216,7 @@ L1 模式不会安装 `changes/_template/`、`decisions/` 或 `integration/githu
     specs/_template/spec.md
     changes/_template/*.md
     decisions/ADR-0000-template.md
+    skill-feedback/_template.md
     handover/current.md
     handover/for-next-maintainer.md
     integration/github/*.md

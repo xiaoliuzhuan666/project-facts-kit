@@ -26,17 +26,18 @@ printf '=== Generating Repo Map for %s ===\n' "$TARGET_DIR"
 
   # 获取仓库结构，过滤掉无关目录
   # 如果支持 tree，用 tree；否则用 find 模拟
+  # 统一先 cd 进目标目录用相对路径输出，避免把 $TARGET_DIR 内插进 sed 表达式
+  #（路径含 | [ \ * 等 sed 元字符时会破坏表达式）。
   if command -v tree >/dev/null 2>&1; then
     (cd "$TARGET_DIR" && tree -d -L 3 -I 'node_modules|.git|dist|build|coverage|.gemini|cert' .)
   else
-    find "$TARGET_DIR" -maxdepth 3 -type d \
+    (cd "$TARGET_DIR" && find . -maxdepth 3 -type d \
       ! -path '*/.*' \
       ! -path '*node_modules*' \
       ! -path '*dist*' \
       ! -path '*build*' \
       ! -path '*coverage*' \
-      ! -path '*cert*' \
-      | sed "s|$TARGET_DIR|.|"
+      ! -path '*cert*')
   fi
 
   printf '\n## Key Code Symbols\n'
@@ -51,8 +52,10 @@ printf '=== Generating Repo Map for %s ===\n' "$TARGET_DIR"
   # 优先采用 ctags 提取符号大纲
   if ctags_supports_required_options; then
     printf '# Using ctags to extract key symbols...\n'
-    # 查找主要的代码文件
-    find "$TARGET_DIR" -type f \
+    # 查找主要的代码文件。-print0/-0 防止路径含空格时 xargs 拆词；
+    # ctags 输出为 Tab 分隔：name<TAB>file<TAB>line;"<TAB>kind<TAB>...，
+    # 按 Tab 分列取“符号 (文件:行号)”。
+    (cd "$TARGET_DIR" && find . -type f \
       \( -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.py" -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.cpp" -o -name "*.h" -o -name "*.c" \) \
       ! -path '*/node_modules/*' \
       ! -path '*/.*' \
@@ -60,14 +63,15 @@ printf '=== Generating Repo Map for %s ===\n' "$TARGET_DIR"
       ! -path '*/build/*' \
       ! -path '*/cert/*' \
       ! -path '*/coverage/*' \
-      | xargs ctags -f - --fields=+n --excmd=number 2>/dev/null \
-      | awk '{print $1 " (" $4 ":" $3 ")"}' \
+      -print0 \
+      | xargs -0 ctags -f - --fields=+n --excmd=number 2>/dev/null \
+      | awk -F'\t' '!/^!/ {line=$3; sub(/;".*$/, "", line); print $1 " (" $2 ":" line ")"}') \
       || printf 'Ctags extraction completed with warnings.\n'
   else
     printf '# [Notice] Universal Ctags not found on system. Falling back to key files list.\n'
     printf "# To get rich symbol indexes, please install universal-ctags (e.g. 'brew install universal-ctags').\n\n"
     # 列出关键代码文件
-    find "$TARGET_DIR" -type f \
+    (cd "$TARGET_DIR" && find . -type f \
       \( -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.py" -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.cpp" -o -name "*.h" -o -name "*.c" -o -name "*.md" -o -name "*.json" -o -name "*.yaml" -o -name "*.yml" \) \
       ! -path '*/node_modules/*' \
       ! -path '*/.*' \
@@ -80,9 +84,9 @@ printf '=== Generating Repo Map for %s ===\n' "$TARGET_DIR"
       ! -iname '*secret*' \
       ! -iname '*credential*' \
       ! -iname '*token*' \
-      | sed "s|$TARGET_DIR/||" \
+      | sed 's|^\./||' \
       | sort \
-      | sed 's/^/- /'
+      | sed 's/^/- /')
   fi
 } > "$OUTPUT_FILE"
 

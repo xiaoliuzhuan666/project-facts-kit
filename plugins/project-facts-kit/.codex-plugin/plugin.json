@@ -1,6 +1,6 @@
 {
   "name": "project-facts-kit",
-  "version": "0.3.60",
+  "version": "0.3.61",
   "description": "Project facts and low-token context workflows for Codex teams.",
   "author": {
     "name": "Project Facts Kit maintainers"

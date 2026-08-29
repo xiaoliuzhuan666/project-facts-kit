@@ -106,6 +106,9 @@ function main() {
     if (!fs.existsSync(workspace)) {
       fail(`Workspace does not exist: ${workspace}`);
     }
+    if (!fs.statSync(workspace).isDirectory()) {
+      fail(`Workspace is not a directory: ${workspace}`);
+    }
     const context = buildContext(workspace);
     runCodexMemCommand(subcommand, context, opts);
     return;
@@ -131,6 +134,9 @@ function main() {
 
   if (!fs.existsSync(workspace)) {
     fail(`Workspace does not exist: ${workspace}`);
+  }
+  if (!fs.statSync(workspace).isDirectory()) {
+    fail(`Workspace is not a directory: ${workspace}`);
   }
 
   if (command === "inspect") {
@@ -230,57 +236,61 @@ function main() {
 
 function parseOptions(args) {
   const opts = {};
+  const nextValue = (i, flag) => {
+    if (i + 1 >= args.length || args[i + 1] === undefined) fail(`Option ${flag} requires a value`);
+    return args[i + 1];
+  };
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
-    if (arg === "--workspace" || arg === "-w") opts.workspace = args[++i];
-    else if (arg === "--input") opts.input = args[++i];
+    if (arg === "--workspace" || arg === "-w") opts.workspace = nextValue(i++, arg);
+    else if (arg === "--input") opts.input = nextValue(i++, arg);
     else if (arg === "--event" || arg === "--events") {
       if (!opts.eventFiles) opts.eventFiles = [];
-      opts.eventFiles.push(args[++i]);
+      opts.eventFiles.push(nextValue(i++, arg));
     }
-    else if (arg === "--output" || arg === "-o") opts.output = args[++i];
+    else if (arg === "--output" || arg === "-o") opts.output = nextValue(i++, arg);
     else if (arg === "--dry-run") opts.dryRun = true;
     else if (arg === "--force") opts.force = true;
     else if (arg === "--json") opts.json = true;
     else if (arg === "--with-codegraph") opts.withCodegraph = true;
     else if (arg === "--help" || arg === "-h") opts.help = true;
     else if (arg === "--version" || arg === "-v") opts.version = true;
-    else if (arg === "--repos") opts.repos = args[++i]?.split(",").map((s) => s.trim()).filter(Boolean);
-    else if (arg === "--codegraph-timeout") opts.codegraphTimeout = Number(args[++i]);
-    else if (arg === "--token-encoding") opts.tokenEncoding = args[++i];
-    else if (arg === "--top-files-len") opts.topFilesLen = Number(args[++i]);
-    else if (arg === "--mode") opts.mode = args[++i];
-    else if (arg === "--type") opts.type = args[++i];
-    else if (arg === "--query" || arg === "-q") opts.query = args[++i];
-    else if (arg === "--frontend-repo") opts.frontendRepo = args[++i];
-    else if (arg === "--backend-repo") opts.backendRepo = args[++i];
-    else if (arg === "--related" || arg === "--related-type") opts.related = args[++i];
-    else if (arg === "--ref") opts.ref = args[++i];
-    else if (arg === "--hash") opts.hash = args[++i];
-    else if (arg === "--name") opts.name = args[++i];
-    else if (arg === "--title") opts.title = args[++i];
-    else if (arg === "--summary") opts.summary = args[++i];
-    else if (arg === "--repo") opts.repo = args[++i];
-    else if (arg === "--path") opts.path = args[++i];
+    else if (arg === "--repos") opts.repos = nextValue(i++, arg).split(",").map((s) => s.trim()).filter(Boolean);
+    else if (arg === "--codegraph-timeout") opts.codegraphTimeout = Number(nextValue(i++, arg));
+    else if (arg === "--token-encoding") opts.tokenEncoding = nextValue(i++, arg);
+    else if (arg === "--top-files-len") opts.topFilesLen = Number(nextValue(i++, arg));
+    else if (arg === "--mode") opts.mode = nextValue(i++, arg);
+    else if (arg === "--type") opts.type = nextValue(i++, arg);
+    else if (arg === "--query" || arg === "-q") opts.query = nextValue(i++, arg);
+    else if (arg === "--frontend-repo") opts.frontendRepo = nextValue(i++, arg);
+    else if (arg === "--backend-repo") opts.backendRepo = nextValue(i++, arg);
+    else if (arg === "--related" || arg === "--related-type") opts.related = nextValue(i++, arg);
+    else if (arg === "--ref") opts.ref = nextValue(i++, arg);
+    else if (arg === "--hash") opts.hash = nextValue(i++, arg);
+    else if (arg === "--name") opts.name = nextValue(i++, arg);
+    else if (arg === "--title") opts.title = nextValue(i++, arg);
+    else if (arg === "--summary") opts.summary = nextValue(i++, arg);
+    else if (arg === "--repo") opts.repo = nextValue(i++, arg);
+    else if (arg === "--path") opts.path = nextValue(i++, arg);
     else if (arg === "--tag") {
       if (!opts.tags) opts.tags = [];
-      opts.tags.push(args[++i]);
+      opts.tags.push(nextValue(i++, arg));
     }
     else if (arg === "--tags") {
       if (!opts.tags) opts.tags = [];
-      opts.tags.push(...String(args[++i] || "").split(",").map((s) => s.trim()).filter(Boolean));
+      opts.tags.push(...String(nextValue(i++, arg) || "").split(",").map((s) => s.trim()).filter(Boolean));
     }
-    else if (arg === "--limit") opts.limit = Number(args[++i]);
-    else if (arg === "--threshold") opts.threshold = Number(args[++i]);
-    else if (arg === "--codex-home") opts.codexHome = args[++i];
-    else if (arg === "--days") opts.days = Number(args[++i]);
+    else if (arg === "--limit") opts.limit = Number(nextValue(i++, arg));
+    else if (arg === "--threshold") opts.threshold = Number(nextValue(i++, arg));
+    else if (arg === "--codex-home") opts.codexHome = nextValue(i++, arg);
+    else if (arg === "--days") opts.days = Number(nextValue(i++, arg));
     else if (arg === "--session") {
       if (!opts.sessionIds) opts.sessionIds = [];
-      opts.sessionIds.push(args[++i]);
+      opts.sessionIds.push(nextValue(i++, arg));
     }
     else if (arg === "--sessions") {
       if (!opts.sessionIds) opts.sessionIds = [];
-      opts.sessionIds.push(...String(args[++i] || "").split(",").map((s) => s.trim()).filter(Boolean));
+      opts.sessionIds.push(...String(nextValue(i++, arg) || "").split(",").map((s) => s.trim()).filter(Boolean));
     }
     else fail(`Unknown option: ${arg}`);
   }
@@ -496,7 +506,7 @@ function buildRepoInfo(repoPath, workspace) {
   const backendJavaFiles = files.filter((f) => f.startsWith("src/main/java/") && f.endsWith(".java"));
   const vueFiles = files.filter((f) => f.endsWith(".vue"));
   const mapperXml = files.filter((f) => f.includes("/mapper/") && f.endsWith(".xml"));
-  const controllers = javaFiles.filter((file) => safeRead(path.join(repoPath, file)).includes("@RestController"));
+  const controllers = javaFiles.filter((file) => readFilePrefix(path.join(repoPath, file), 64 * 1024).includes("@RestController"));
   const apiFiles = files.filter(isFrontendApiCandidateFile);
   const tech = detectTech({ hasPom, hasGoMod, hasPackage, hasPagesJson, hasManifest, goFiles, backendJavaFiles, vueFiles });
   const metadata = detectRepoMetadata(repoPath, files);
@@ -1849,7 +1859,6 @@ function contractFrontendPayloadCell(cells) {
 }
 
 function contractRequestFieldsCell(cells) {
-  if (cells.length >= 10) return cells[7];
   if (cells.length >= 9) return cells[7];
   if (cells.length >= 8) return cells[6];
   if (cells.length >= 5) return cells[3];
@@ -2738,12 +2747,7 @@ function extractApiImports(repo, file, content) {
 }
 
 function runCodexMemCommand(subcommand, context, opts) {
-  if (subcommand === "init") {
-    initCodexMem(context, opts);
-    writeCodexMemIndex(context, opts);
-    return;
-  }
-  if (subcommand === "index") {
+  if (subcommand === "init" || subcommand === "index") {
     initCodexMem(context, opts);
     writeCodexMemIndex(context, opts);
     return;
@@ -3005,7 +3009,21 @@ function summarizeForIndex(content) {
 }
 
 function estimateTokens(value) {
-  return Math.ceil(String(value || "").length / 4);
+  const text = String(value || "");
+  let cjk = 0;
+  let other = 0;
+  for (const ch of text) {
+    const code = ch.codePointAt(0);
+    if (
+      (code >= 0x2e80 && code <= 0x9fff) ||
+      (code >= 0xac00 && code <= 0xd7af) ||
+      (code >= 0xf900 && code <= 0xfaff) ||
+      (code >= 0xff00 && code <= 0xffef) ||
+      (code >= 0x20000 && code <= 0x2fa1f)
+    ) cjk += 1;
+    else other += 1;
+  }
+  return Math.ceil(cjk + other / 4);
 }
 
 function safeStat(file) {
@@ -3694,7 +3712,7 @@ function rankReposForPrompt(context, matches, prompt) {
     scores.set(repoName, item);
   };
   for (const repo of context.repos) {
-    const haystack = [repo.name, repo.role, ...(repo.tech || [])].join(" ").toLowerCase();
+    const haystack = [repo.name, repoRole(repo), ...(repo.tech || [])].join(" ").toLowerCase();
     let score = 0;
     for (const term of terms) {
       if (term && haystack.includes(term)) score += 3;
@@ -4455,7 +4473,21 @@ function safeStringify(value) {
 }
 
 function estimateTokens(value) {
-  return Math.ceil(String(value || "").length / 4);
+  const text = String(value || "");
+  let cjk = 0;
+  let other = 0;
+  for (const ch of text) {
+    const code = ch.codePointAt(0);
+    if (
+      (code >= 0x2e80 && code <= 0x9fff) ||
+      (code >= 0xac00 && code <= 0xd7af) ||
+      (code >= 0xf900 && code <= 0xfaff) ||
+      (code >= 0xff00 && code <= 0xffef) ||
+      (code >= 0x20000 && code <= 0x2fa1f)
+    ) cjk += 1;
+    else other += 1;
+  }
+  return Math.ceil(cjk + other / 4);
 }
 
 function appendJsonl(file, value) {
@@ -4662,7 +4694,7 @@ function writeCodexSessionUsageReport(context, opts) {
   const days = Number.isFinite(opts.days) && opts.days > 0 ? opts.days : 14;
   const sessionsDir = path.join(codexHome, "sessions");
   const outPath = path.resolve(opts.output || path.join(context.workspace, "docs", "codex-session-usage.md"));
-  const allSessions = collectCodexSessions({ sessionsDir, workspace: context.workspace, days });
+  const allSessions = collectCodexSessions({ sessionsDir, workspace: context.workspace, days, codexHome });
   const requestedSessionIds = normalizeSessionIds(opts.sessionIds);
   const { sessions, missingSessionIds } = filterSessionsByIds(allSessions, requestedSessionIds);
   writeCommandOutput(outPath, renderCodexSessionUsageReport({
@@ -4702,14 +4734,15 @@ function filterSessionsByIds(sessions, requestedSessionIds) {
   return { sessions: filtered, missingSessionIds: missing };
 }
 
-function collectCodexSessions({ sessionsDir, workspace, days }) {
+function collectCodexSessions({ sessionsDir, workspace, days, codexHome }) {
   const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
   const files = listSessionFiles(sessionsDir).filter((file) => {
     const stat = safeStat(file);
     return stat && stat.mtimeMs >= cutoff && stat.size <= 50 * 1024 * 1024;
   });
   const workspaceRoot = path.resolve(workspace);
-  return files.map((file) => readCodexSessionSummary(file, workspaceRoot))
+  const codexHomeRoot = path.resolve(codexHome || path.join(os.homedir(), ".codex"));
+  return files.map((file) => readCodexSessionSummary(file, workspaceRoot, codexHomeRoot))
     .filter((session) => session && sessionMatchesWorkspace(session, workspaceRoot))
     .sort((a, b) => String(b.lastTimestamp || "").localeCompare(String(a.lastTimestamp || "")));
 }
@@ -4734,7 +4767,7 @@ function listSessionFiles(root) {
   return out;
 }
 
-function readCodexSessionSummary(file, workspaceRoot) {
+function readCodexSessionSummary(file, workspaceRoot, codexHomeRoot) {
   const text = safeReadLarge(file, 50 * 1024 * 1024);
   if (!text) return null;
   const session = {
@@ -4802,7 +4835,7 @@ function readCodexSessionSummary(file, workspaceRoot) {
   }
   if (session.status === "unknown" && session.warningMessages.length) session.status = "warning";
   session.toolNames = [...session.toolNames.entries()].sort((a, b) => b[1] - a[1]);
-  session.workspaceRelFile = slash(path.relative(path.join(os.homedir(), ".codex"), file));
+  session.workspaceRelFile = slash(path.relative(codexHomeRoot || path.join(os.homedir(), ".codex"), file));
   session.workspaceMatched = sessionMatchesWorkspace(session, workspaceRoot);
   return session;
 }
@@ -5568,6 +5601,17 @@ function writeTokenSavingsReport(context, opts) {
   }
 
   writeCommandOutput(outPath, renderTokenSavingsReport({ context, parent, routing, repoRows, encoding, topFilesLen }), opts);
+  cleanupTempOutputs([parent, routing, ...repoRows.flatMap((row) => [row.baseline, row.lean, row.index])]);
+}
+
+function cleanupTempOutputs(measurements) {
+  for (const item of measurements || []) {
+    const output = item && item.output;
+    if (!output || !String(output).startsWith(os.tmpdir())) continue;
+    try {
+      fs.rmSync(output, { force: true });
+    } catch {}
+  }
 }
 
 function runRepomixMeasure({ name, cwd, files, output, encoding, topFilesLen, npxCommand }) {

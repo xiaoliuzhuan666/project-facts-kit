@@ -1,6 +1,6 @@
 # neuDrive 来源快照
 
-这些资料于 2026-05-25 从 `/Users/zhongmoshu/Desktop/work/neuDrive/docs/` 复制，用于记录 `project-facts-kit` 建立时所依据的调研和产品边界。
+这些资料于 2026-05-25 从 `<neudrive-workspace>/docs/` 复制，用于记录 `project-facts-kit` 建立时所依据的调研和产品边界。
 
 规则：
 

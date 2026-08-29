@@ -185,8 +185,23 @@ install_user_cli_links() {
   fi
 
   mkdir -p "$user_bin"
-  ln -sfn "$bin" "$user_bin/ai-context-kit"
-  ln -sfn "$bin" "$user_bin/project-facts-kit"
+  local name target
+  for name in ai-context-kit project-facts-kit; do
+    target="$user_bin/$name"
+    # 只覆盖两类目标：不存在，或本 kit 早前建立的软链（含指向已迁移路径的悬空链）。
+    # 用户自己放置的同名命令或指向其它程序的软链一律拒绝覆盖。
+    if [[ -e "$target" || -L "$target" ]]; then
+      if [[ -L "$target" ]] && [[ "$(readlink "$target")" == *"/ai-context-kit.mjs" ]]; then
+        ln -sfn "$bin" "$target"
+      else
+        printf 'Refusing to overwrite existing non-kit command: %s\n' "$target" >&2
+        printf 'Remove it manually if you want this kit to own that name.\n' >&2
+        exit 1
+      fi
+    else
+      ln -s "$bin" "$target"
+    fi
+  done
   printf 'Linked CLI in user bin: %s\n' "$user_bin"
   configure_user_path
 }
@@ -205,6 +220,7 @@ if [[ "$run_npm_link" -eq 1 ]]; then
     else
       if grep -Fq 'EACCES' "$npm_link_log"; then
         printf 'npm link is unavailable because the npm global directory is not writable; using user-level CLI links instead.\n' >&2
+        rm -f "$npm_link_log"
       else
         printf 'npm link failed; using user-level CLI links instead. npm log: %s\n' "$npm_link_log" >&2
       fi

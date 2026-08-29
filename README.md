@@ -197,6 +197,7 @@ ai-context-kit automation-prompt --workspace /absolute/path/to/workspace --type 
 
 | 路径 | 用途 |
 | --- | --- |
+| `docs/README.md` | docs 全量索引：按现行制度 / 操作手册 / 状态台账 / 历史调研分类标注权威度 |
 | `docs/project-facts-governance.zh-CN.md` | 项目事实制度正文 |
 | `docs/adoption-guide.zh-CN.md` | 新项目、旧项目、Spec Kit、OpenSpec、多仓库的采用方式 |
 | `docs/project-facts-kit-update-commands.zh-CN.md` | 本机更新、项目升级、自动化和维护命令 |

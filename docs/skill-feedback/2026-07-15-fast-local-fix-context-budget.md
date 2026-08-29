@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Candidate ID | `SFC-20260715-fast-local-fix-context-budget` |
-| Status | `accepted` |
+| Status | `applied` |
 | Created at | `2026-07-15` |
 | Source project | `崆峒 multi-repository workspace` |
 | Skill | `low-token-context-maintainer` |

@@ -18,7 +18,7 @@ Reviewers:
 - [ ] This PR does not change shared Agent Skills; or accepted candidate feedback is linked below.
 - [ ] Skill changes are based on real task evidence, not only an AI summary.
 - [ ] Project-specific business rules were not copied into a shared Skill.
-- [ ] `./scripts/check-kit.sh` and `git diff --check` were run, or the reason is recorded.
+- [ ] `git diff --check` was run in this repository; changes to the shared kit itself (skills, templates, install scripts) also ran `./scripts/check-kit.sh` in the kit repository, or the reason is recorded.
 
 Skill feedback candidate: `<docs/skill-iteration-backlog.zh-CN.md row, docs/skill-feedback path, or N/A>`
 

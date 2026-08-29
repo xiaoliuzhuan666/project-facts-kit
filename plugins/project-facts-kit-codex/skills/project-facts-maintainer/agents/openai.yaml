@@ -2,3 +2,6 @@ interface:
   display_name: "Project Facts Maintainer"
   short_description: "Adopt and maintain reviewed project facts"
   default_prompt: "Use $project-facts-maintainer to adopt or upgrade project-facts-kit without overwriting facts, and maintain reviewed project facts, runtime records, handovers, evidence, and Skill feedback candidates."
+
+policy:
+  allow_implicit_invocation: true

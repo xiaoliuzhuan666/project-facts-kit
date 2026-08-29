@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# 失败时打印行号与退出码：本脚本大量断言依赖 set -e 静默退出，
+# 没有这个 trap 时 CI 上只能靠 bash -x 人肉二分定位。
+trap 'printf "check-kit.sh: FAILED at line %s (exit %s)\n" "$LINENO" "$?" >&2' ERR
+
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 required_files=(
   "README.md"
@@ -57,11 +61,15 @@ required_files=(
   "scripts/sync-skills.sh"
   "skills/project-facts-maintainer/SKILL.md"
   "skills/project-facts-maintainer/agents/openai.yaml"
+  "skills/project-facts-maintainer/references/policy.md"
   "skills/project-facts-maintainer/references/runtime-release-facts.md"
   "skills/project-facts-maintainer/references/domain-index-template.md"
   "skills/project-facts-maintainer/references/business-domain-report-template.md"
   "skills/low-token-context-maintainer/SKILL.md"
   "skills/low-token-context-maintainer/agents/openai.yaml"
+  "skills/low-token-context-maintainer/references/cross-repository-contracts.md"
+  "skills/low-token-context-maintainer/references/workspace-workflows.md"
+  "skills/low-token-context-maintainer/references/token-measurement-and-cli.md"
   "plugins/project-facts-kit/.codex-plugin/plugin.json"
   "plugins/project-facts-kit/skills/project-facts-maintainer/SKILL.md"
   "plugins/project-facts-kit/skills/low-token-context-maintainer/SKILL.md"
@@ -134,12 +142,12 @@ fi
   shasum -a 256 -c docs/research/source-neudrive/SHA256SUMS >/dev/null
 )
 
-if command -v rg >/dev/null 2>&1 && rg -n '\[TODO:' "$repo_root/skills/project-facts-maintainer" "$repo_root/skills/low-token-context-maintainer"; then
+if grep -rEq '\[TODO:' "$repo_root/skills/project-facts-maintainer" "$repo_root/skills/low-token-context-maintainer"; then
   printf 'Skill still contains scaffold TODO markers.\n' >&2
   exit 1
 fi
 
-if command -v rg >/dev/null 2>&1 && rg -n 'Workspace \| `<absolute path>`|仓库：<absolute or remote path>|<repository path or name>' "$repo_root/template" "$repo_root/skills"; then
+if grep -rEq 'Workspace \| `<absolute path>`|仓库：<absolute or remote path>|<repository path or name>' "$repo_root/template" "$repo_root/skills"; then
   printf 'Template or skill reference still encourages committing a local absolute workspace path.\n' >&2
   exit 1
 fi
@@ -176,7 +184,7 @@ test -L "$tmp/local-kit-home/codex/skills/low-token-context-maintainer"
 test -s "$tmp/local-kit-home/codex/skills/project-facts-maintainer/SKILL.md"
 test -s "$tmp/local-kit-home/codex/skills/low-token-context-maintainer/SKILL.md"
 CODEX_HOME="$tmp/local-kit-home/codex" "$repo_root/scripts/setup-local-kit.sh" --skip-npm-link --copy-skills >/dev/null
-find "$tmp/local-kit-home/codex/skills" -maxdepth 1 -type l -name 'project-facts-maintainer.backup-*' | grep -q .
+test -n "$(find "$tmp/local-kit-home/codex/skills" -maxdepth 1 -type l -name 'project-facts-maintainer.backup-*' -print -quit)"
 test -d "$tmp/local-kit-home/codex/skills/project-facts-maintainer"
 test -s "$tmp/local-kit-home/codex/skills/project-facts-maintainer/SKILL.md"
 mkdir -p "$tmp/local-kit-home/no-npm-bin"
@@ -186,7 +194,12 @@ env -i HOME="$tmp/local-kit-home/no-npm-home" PATH="$tmp/local-kit-home/no-npm-b
 test -x "$tmp/local-kit-home/no-npm-home/.local/bin/ai-context-kit"
 "$tmp/local-kit-home/no-npm-home/.local/bin/ai-context-kit" --version | grep -Fq 'ai-context-kit'
 grep -Fq 'project-facts-kit PATH' "$tmp/local-kit-home/no-npm-home/.zshrc"
-env -i HOME="$tmp/local-kit-home/no-npm-home" SHELL="/bin/zsh" PATH="/usr/bin:/bin" zsh -lc 'command -v ai-context-kit >/dev/null'
+# zsh 在部分 Linux CI 容器里不存在，缺失时跳过 login-shell PATH 生效检查而不是硬失败。
+if command -v zsh >/dev/null 2>&1; then
+  env -i HOME="$tmp/local-kit-home/no-npm-home" SHELL="/bin/zsh" PATH="/usr/bin:/bin" zsh -lc 'command -v ai-context-kit >/dev/null'
+else
+  printf 'zsh not found; skipping the login-shell PATH activation check.\n' >&2
+fi
 
 if "$repo_root/scripts/install-project-facts.sh" "$tmp/target" >/dev/null 2>&1; then
   printf 'Installer unexpectedly overwrote an existing project-facts directory.\n' >&2
@@ -222,8 +235,8 @@ test -s "$tmp/upgrade-skills/low-token-context-maintainer/SKILL.md"
 "$repo_root/scripts/install-project-facts.sh" "$tmp/upgrade-target" --upgrade-existing --skill-dir "$tmp/upgrade-skills" --refresh-skills >/dev/null
 test -s "$tmp/upgrade-skills/project-facts-maintainer/SKILL.md"
 test -s "$tmp/upgrade-skills/low-token-context-maintainer/SKILL.md"
-find "$tmp/upgrade-skills" -maxdepth 1 -type d -name 'project-facts-maintainer.backup-*' | grep -q .
-find "$tmp/upgrade-skills" -maxdepth 1 -type d -name 'low-token-context-maintainer.backup-*' | grep -q .
+test -n "$(find "$tmp/upgrade-skills" -maxdepth 1 -type d -name 'project-facts-maintainer.backup-*' -print -quit)"
+test -n "$(find "$tmp/upgrade-skills" -maxdepth 1 -type d -name 'low-token-context-maintainer.backup-*' -print -quit)"
 if ! grep -R -Fxq 'old skill' "$tmp/upgrade-skills"/project-facts-maintainer.backup-*/SKILL.md; then
   printf 'Upgrade mode did not keep a backup of the old project-facts skill.\n' >&2
   exit 1
@@ -784,7 +797,7 @@ grep -Fq '字段契约' "$tmp/context-workspace/AGENTS.md"
 grep -Fq '新旧接口路径' "$tmp/context-workspace/AGENTS.md"
 grep -Fq 'ai-context-kit contracts' "$tmp/context-workspace/AGENTS.md"
 grep -Fq '同页面相关接口' "$tmp/context-workspace/AGENTS.md"
-if rg -n '再读完整索引|再读取完整索引' "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs" >/dev/null; then
+if grep -Eq '再读完整索引|再读取完整索引' "$repo_root/packages/ai-context-kit/bin/ai-context-kit.mjs"; then
   printf 'ai-context-kit CLI still suggests reading the full contract index.\n' >&2
   exit 1
 fi

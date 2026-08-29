@@ -1,6 +1,6 @@
 # 团队快速使用
 
-本文对应 `ai-context-kit 0.3.60`。命令以 `ai-context-kit --help` 的实际输出为准，不把设计文档中的待实现命令当作现有能力。
+本文对应 `ai-context-kit 0.3.61`。命令以 `ai-context-kit --help` 的实际输出为准，不把设计文档中的待实现命令当作现有能力。
 
 ## 1. 准备本机工具
 
@@ -144,13 +144,13 @@ codex plugin marketplace list
 
 ## 8. CI 报告
 
-仓库提供 [ai-context-kit-context-check.yml](../template/github/workflows/ai-context-kit-context-check.yml)。复制前确认 CI 使用的 npm registry 已有 `ai-context-kit@0.3.60`，或把 `AI_CONTEXT_KIT_PACKAGE` 改为团队内部包名。
+仓库提供 [ai-context-kit-context-check.yml](../template/github/workflows/ai-context-kit-context-check.yml)。复制前确认 CI 使用的 npm registry 已有 `ai-context-kit@0.3.61`，或把 `AI_CONTEXT_KIT_PACKAGE` 改为团队内部包名。
 
 当前 workflow 执行 `inspect`、`doctor` 和 `token-status`，报告写到 runner 的 `/tmp` 后上传 artifact，不修改 checkout。它用于暴露状态，不提供 warning gate。
 
 ## 9. 当前未实现的命令
 
-`0.3.60` 没有以下 CLI：
+`0.3.61` 没有以下 CLI：
 
 - `ai-context-kit install`
 - `ai-context-kit quickstart`

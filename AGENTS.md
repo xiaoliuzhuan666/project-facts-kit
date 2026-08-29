@@ -17,7 +17,7 @@
 
 - 不把 AI 推断写成已批准业务规则。
 - 外部工具版本、标准内容和产品能力如会发生变化，更新前重新查官方资料并写日期。
-- 制度正文有变化时，同步检查 `template/`、`skills/project-facts-maintainer/` 与安装脚本的表达是否仍一致。
+- 制度正文有变化时，同步检查 `template/`、`skills/`（`project-facts-maintainer` 与 `low-token-context-maintainer`）与安装脚本的表达是否仍一致。
 - 来源快照位于 `docs/research/source-neudrive/`，保留原样用于追溯；需要修订的通用规则写到本项目自己的文档。
 - 不让模板安装脚本覆盖目标仓库已有项目事实目录或已有 Skill。
 
