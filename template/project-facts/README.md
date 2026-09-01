@@ -50,6 +50,7 @@ project-facts/
   changes/<yyyy-mm-dd>-<change>/*.md
   decisions/ADR-*.md
   handover/current.md
+  handover/archive/
   handover/for-next-maintainer.md
 ```
 
@@ -63,6 +64,8 @@ project-facts/
 - `skill-feedback/` 只记录可以反哺到共享 Skill 的候选项，不直接修改正式 Skill。
 - `evidence.md` 只记录实际执行的检查结果，未执行写 `Not run`。
 - 没有责任人确认或明确批准依据时，状态不得写成 `APPROVED`。
+- `handover/current.md` 只保留 Continuation Handoff 快照；切会话或换编码软件时覆写这 7 行，不追加流水。
+- `handover/archive/` 保存已收成日记的旧 `current.md`。
 - `handover/for-next-maintainer.md` 用来保存可直接交给下一位维护者和 AI 的读取入口。
 
 ## Skill 反馈候选

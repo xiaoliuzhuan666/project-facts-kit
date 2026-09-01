@@ -85,15 +85,12 @@ project-facts/
 - 验收场景；
 - 最近验证结果。
 
-`handover/current.md` 写接手入口：
+`handover/current.md` 写接手快照，不要写成日记：
 
-- 当前维护者；
-- 当前代码版本；
-- 最近活跃变更；
-- 哪些已批准；
-- 哪些只是观察到的行为；
-- 未解决问题；
-- 下一个人应该读哪些文件。
+- 只覆写 Continuation Handoff 7 行：`task`、`current_goal`、`done`、`key_decisions`、`blockers`、`related_files`、`next_step`；
+- 另附当前维护者、代码版本、活跃 change、仍挡住任务的未知项；
+- 换编码软件时读这页和 `git status`，不同步聊天记录；
+- 流水进 `changes/`；旧日记进 `handover/archive/`。
 
 `handover/for-next-maintainer.md` 写可以发给同事和 AI 的接手消息：
 

@@ -10,12 +10,23 @@ Build and maintain project facts that remain readable across different models an
 ## Workflow
 
 1. Locate the target repository instructions, test commands and any existing project fact or specification directories.
-2. Read current specifications, iteration plan, decisions, active changes and both handover files before using code or chat history to infer behavior.
+2. For a new session or a switch between coding agents, read `git status --short`, `git log -5 --oneline`, and only the Continuation Handoff at the top of `handover/current.md`. Do not ingest another agent's chat log. Read specifications, iteration plan, decisions, active changes and `for-next-maintainer.md` only when the current task needs them.
 3. Classify each relevant statement as `APPROVED`, `OBSERVED`, `UNKNOWN` or `CONFLICT`, with source paths and revisions.
 4. For a new or changed behavior, create or update a change record containing purpose, non-goals, affected requirement IDs, unresolved questions, implementation tasks and planned verification.
 5. Stop business-changing implementation when a `Blocker` or `High` unknown remains open and no approved source resolves it.
 6. After implementation, execute relevant checks and record the actual result. Mark unexecuted checks `Not run`; do not imply successful acceptance.
-7. Update `iteration-plan.md`, `handover/current.md` and, when another maintainer will take over, `handover/for-next-maintainer.md`.
+7. Update `iteration-plan.md`. For `handover/current.md`, overwrite only the Continuation Handoff (`task`, `current_goal`, `done`, `key_decisions`, `blockers`, `related_files`, `next_step`) plus the still-blocking unknowns. Put diary text in `changes/`. If `current.md` has become a long log, move the old body to `handover/archive/<YYYY-MM-DD>-current.md` before writing the snapshot. Update `handover/for-next-maintainer.md` only when another maintainer will take over.
+
+## Handover Snapshot
+
+Use this section when switching coding agents, starting a new session on the same task, or handing work to another maintainer.
+
+1. Do not copy chat transcripts between tools. Durable state lives in Git.
+2. `handover/current.md` is a one-page snapshot. The only required live block is Continuation Handoff: `task`, `current_goal`, `done`, `key_decisions`, `blockers`, `related_files`, `next_step`.
+3. Overwrite that block at each handoff. Do not append daily narrative.
+4. Write implementation narrative, verification tables and closed unknowns in `project-facts/changes/<date>-<change>/`.
+5. If `current.md` exceeds about one page or reads like a changelog, archive it to `handover/archive/<YYYY-MM-DD>-current.md` and replace it with a fresh snapshot.
+6. Keep only unknowns that still block the current task in `current.md`.
 
 ## Existing Repository Baseline
 
@@ -143,6 +154,16 @@ Use this section when a small, concrete fix needs traceable evidence but a full 
 3. Keep the source list to files that decided the change. Do not include every file read while exploring unless it changes the conclusion.
 4. Mark sibling-client behavior, existing code behavior, and agent summaries as `OBSERVED`; use `APPROVED` only for reviewed specifications or owner decisions.
 5. Expand to a full spec, business-domain report, or decision record only when the task changes product intent, money movement, permissions, deletion, data migration, release boundaries, or a reusable domain rule.
+
+## Cross-Runtime UI Evidence
+
+Use this section when a UI data bug already failed one code change, or parent state looks correct while the view is wrong.
+
+1. Before the next code change, record checkpoints: input or config, request, response, parent state, child props, adapter or generated-layer state, and the visible view.
+2. Change only the first layer where counts or values disagree. Record failed attempts as `CONFLICT` and revert them.
+3. If the stack compiles or adapts source into another runtime, check the generated file for the assumed attribute. A source-only assumption is failed evidence.
+4. Cap live API debug calls. On rate limit or external error, stop page retries and mark verification `Partial` or `Not run`.
+5. Evidence must compare the same checkpoint before and after. Build, lint or diff alone is not enough.
 
 ## Cross-Client Parity Records
 

@@ -21,6 +21,14 @@
 | `rejected` | 不进入共享 Skill，记录原因 |
 | `applied` | 已改入 `skills/`、模板、脚本或 CLI，并完成资料库检查 |
 
+## 2026-09-01 交接快照
+
+| 状态 | 数量 | 候选项 | 评审结论 |
+| --- | ---: | --- | --- |
+| `applied` | 2 | `SFC-20260901-handover-snapshot-not-diary`、`SFC-20260717-evidence-first-cross-runtime-ui-debugging` | 交接快照规则已写入模板和 Skill。跨运行时 UI 检查点（父/子数据、生成文件、接口限流）已写入 Skill，业务页面和字段未进入共享资料。 |
+
+未纳入共享 Skill 的业务仓库候选项：运营手册菜单核验、截图脱敏、第三方字段契约等，属于项目专属或本地 Skill，不拷贝页面、接口、账号和环境信息。
+
 ## 2026-07-15 第一阶段实施结果
 
 | 状态 | 数量 | 候选项 | 评审结论 |
@@ -87,7 +95,7 @@
 | `<SFC-YYYYMMDD-name>` | `<project-facts/skill-feedback/...>` | `<improve_skill/new_skill/tooling_fix>` | `proposed` | `<fill>` |
 | `SFC-20260623-multistep-form-return-state` | `docs/skill-feedback/2026-06-23-multistep-form-return-state.md` | `improve_skill` | `proposed` | 2026-07-14 复核：真实任务、证据路径、验证结果和适用范围已记录；Reviewer 仍为 Pending，不能标为 `accepted`。具体路由、字段和 `advancePreDays` 留在目标项目事实。 |
 | `SFC-20260715-universal-low-intrusion-phase-a` | `docs/skill-feedback/2026-07-15-universal-low-intrusion-phase-a.md` | `tooling_fix` | `applied` | 2026-07-15 已完成 Phase A 修改；CLI/Bash、资料库、Skill 和 Plugin 检查通过。 |
-| `SFC-20260717-evidence-first-cross-runtime-ui-debugging` | `docs/skill-feedback/2026-07-17-evidence-first-cross-runtime-ui-debugging.md` | `improve_skill` | `proposed` | 2026-07-17 登记：建议在 `project-facts-maintainer` 的 `Lightweight Change Evidence` 后增加跨运行时 UI 数据检查点规则；Reviewer decision 为 `Pending`，保持 `proposed`。“游园体验”、板块 ID、商品字段名和页面路径留在目标项目。 |
+| `SFC-20260717-evidence-first-cross-runtime-ui-debugging` | `docs/skill-feedback/2026-07-17-evidence-first-cross-runtime-ui-debugging.md` | `improve_skill` | `applied` | 2026-09-01 写入 `Cross-Runtime UI Evidence`；业务页面、字段和文案已脱敏，不进入共享 Skill。 |
 | `SFC-20260720-token-budgeted-context-router` | `docs/skill-feedback/2026-07-20-token-budgeted-context-router.md` | `tooling_fix` | `proposed` | 2026-07-20 登记：query-aware、带硬 token 上限的 `context` 命令（7-15 调研阶段 C、7-20 交叉验证 §5）；Reviewer decision 为 `Pending`，保持 `proposed`。实现前提：至少 1 条 counted 真实任务 A/B，且单独 PR 实施。 |
 | `SFC-20260721-real-task-audit-401-heuristic` | `docs/skill-feedback/2026-07-21-real-task-audit-401-heuristic.md` | `tooling_fix` | `proposed` | 2026-07-21 登记：`real-task-audit` 对记录全文匹配 "401"，会把"接口匿名访问被拒"这类正常观测误标为 `exec failed`；建议把失败检测收窄到"执行失败记录"小节；Reviewer decision 为 `Pending`，保持 `proposed`。 |
 | `SFC-20260721-provider-adapter-architecture` | `docs/skill-feedback/2026-07-21-provider-adapter-architecture.md` | `tooling_fix` | `accepted` | 2026-07-21 登记：provider 适配架构（平台化集成第三方省 token 方案）：core 零依赖、薄 adapter、只读能力检测、失败静默回落、A/B 效果门槛、用户负担红线；承接 `SFC-20260720`。2026-07-21 owner 与首个实例候选一并接受。 |
